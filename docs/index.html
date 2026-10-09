@@ -1,0 +1,1787 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ATMlib Sound Effects Editor</title>
+<link href="https://fonts.googleapis.com/css?family=Cookie&display=swap" rel="stylesheet" />
+<style>:root{--bg:#fefefd;--panel:#f5f5f3;--ink:#333;--muted:#6b5f5e;--accent:#4a3b3a;--warn:#c0392b;--yellow:#f4d35e;--line:#ddd}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font:13px/1.45 "Segoe UI",Tahoma,Geneva,Verdana,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;min-height:100vh}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 14px;background:#fefefd;border-bottom:3px solid #4a3b3a;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+.site-logo{display:flex;align-items:center;flex-shrink:0}.site-logo img{height:44px;width:auto;display:block}
+header h1{font-size:16px;margin:0;color:#4a3b3a;letter-spacing:.04em}
+.bmc-slot{margin-left:auto;display:flex;align-items:center}
+.sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+button,select,input[type=number],input[type=text]{background:#4a3b3a;color:#fefefd;border:1px solid #4a3b3a;padding:3px 8px;border-radius:3px;font:inherit}
+button:hover{background:#2e2424;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
+button.active{background:#2e2424;box-shadow:inset 0 0 0 1px #fefefd}
+button.ghost{background:#fff;color:#4a3b3a}button.ghost:hover{background:#eee}
+button.play{background:#f4d35e;color:#2e2424;border-color:#4a3b3a;font-weight:600;min-width:70px}
+button.play.on{background:#c0392b;color:#fff}
+button.sm{padding:1px 6px;font-size:12px}
+input[type=number],input[type=text],select.light{background:#fff;color:#333}
+input[type=number]{width:62px}
+input[type=range]{accent-color:#4a3b3a;width:90px}
+.layout{display:grid;grid-template-columns:270px minmax(0,1fr) 300px;height:calc(100vh - 62px);min-height:0}
+.panel{padding:10px;overflow:auto;background:var(--panel);border-right:1px solid var(--line);min-height:0}
+.panel.right{border-right:0;border-left:1px solid var(--line);background:#f7f6f4}
+.panel.main{background:var(--bg);display:flex;flex-direction:column;padding:0;overflow:hidden}
+.panel h2{font-size:12px;margin:12px 0 6px;color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+.panel h2:first-child{margin-top:0}
+.tabs{display:flex;gap:2px;margin:-10px -10px 10px;border-bottom:2px solid #4a3b3a;background:#ebe8e4;position:sticky;top:-10px;z-index:3}
+.tabs button{flex:1;border-radius:0;background:transparent;color:#4a3b3a;border:0;padding:6px 4px}
+.tabs button.active{background:#4a3b3a;color:#fefefd;box-shadow:none}
+.row{display:flex;align-items:center;gap:6px;margin:4px 0;flex-wrap:wrap}
+.row label{min-width:78px;color:var(--muted)}
+.hint{color:var(--muted);font-size:12px}
+.item{display:flex;align-items:center;gap:6px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;background:#fff;margin:3px 0;cursor:grab}
+.item:hover{border-color:#4a3b3a}.item.sel{border-color:#4a3b3a;box-shadow:inset 3px 0 0 #f4d35e}
+.item .chip{width:10px;height:22px;border-radius:2px;flex-shrink:0}
+.item .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .meta{color:var(--muted);font-size:11px}
+.item canvas{display:block;flex-shrink:0}
+.cat{font-size:11px;color:var(--muted);margin:8px 0 2px;text-transform:uppercase;letter-spacing:.05em}
+.desc{font-size:11px;color:var(--muted);margin:0 0 4px 2px}
+.arr{border-bottom:2px solid #4a3b3a;background:#faf9f7;flex:0 0 auto;max-height:46%;display:flex;flex-direction:column;min-height:150px}
+.bar{display:flex;align-items:center;gap:8px;padding:5px 10px;border-bottom:1px solid var(--line);background:#f1efeb;flex-wrap:wrap}
+.bar b{color:var(--accent)}
+.arr-scroll{overflow:auto;flex:1;position:relative}
+.arr-inner{position:relative;min-width:100%}
+.ruler{height:20px;position:relative;border-bottom:1px solid var(--line);margin-left:92px;background:#f1efeb}
+.ruler span{position:absolute;top:2px;font-size:10px;color:var(--muted);border-left:1px solid #bbb;padding-left:2px;height:16px}
+.lane{display:flex;height:50px;border-bottom:1px solid var(--line)}
+.lane .lab{width:92px;flex-shrink:0;position:sticky;left:0;z-index:4;background:#ebe8e4;border-right:1px solid #bbb;padding:3px 6px;font-size:11px;line-height:1.25;display:flex;flex-direction:column;justify-content:center}
+.lane .lab b{color:var(--accent)}
+.lane .lab .mute{font-size:10px;padding:0 4px;margin-top:2px;width:max-content}
+.lane .track{position:relative;flex:1}
+.lane.drop .track{background:#fff6d6}
+.blk{position:absolute;top:4px;height:42px;border-radius:4px;color:#fff;font-size:11px;padding:2px 5px;overflow:hidden;white-space:nowrap;cursor:grab;border:2px solid transparent;user-select:none}
+.blk.sel{border-color:#f4d35e;box-shadow:0 0 0 2px #4a3b3a}
+.blk small{display:block;opacity:.8;font-size:10px}
+.blk canvas{position:absolute;left:0;right:0;bottom:0;opacity:.55;pointer-events:none}
+.pad{position:absolute;top:4px;bottom:4px;background:repeating-linear-gradient(45deg,#e9e5df,#e9e5df 4px,#f3f0ec 4px,#f3f0ec 8px);border:1px dashed #b9b1a8;border-radius:4px;pointer-events:none}
+.ins{position:absolute;top:2px;bottom:2px;width:3px;background:#c0392b;z-index:5;pointer-events:none}
+.playhead{position:absolute;top:0;bottom:0;width:2px;background:#c0392b;z-index:6;pointer-events:none;display:none}
+.bargrid{position:absolute;top:20px;bottom:0;border-left:1px dotted #d6d0c8;pointer-events:none}
+.ped{flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)}
+.ped-scroll{flex:1;overflow:auto;position:relative;background:#fff}
+.roll{display:flex;width:max-content}
+.roll canvas.keys{position:sticky;left:0;z-index:2}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+.empty div{border:1px dashed #4a3b3a;border-radius:8px;padding:26px;background:#fff;display:inline-block;max-width:520px}
+.kv{width:100%;border-collapse:collapse}.kv td{padding:1px 3px;font-size:12px}
+.msg{padding:6px 8px;border-radius:4px;margin:4px 0;font-size:12px}
+.msg.err{background:#fbe3df;border:1px solid #c0392b;color:#7b1f14}
+.msg.warn{background:#fff3d1;border:1px solid #c9a227;color:#6b5400}
+.msg.ok{background:#e3f1e3;border:1px solid #3d6b3d;color:#244224}
+textarea.code{width:100%;height:300px;font:11px/1.35 ui-monospace,monospace;border:1px solid #4a3b3a;padding:6px;background:#fff;color:#333;resize:vertical}
+.bmc-btn{min-width:200px;color:#fefefd!important;background:#5d4c4b!important;height:48px;border-radius:12px;font-size:24px;font-weight:normal;border:none;padding:0 20px;line-height:24px;text-decoration:none!important;display:inline-flex!important;align-items:center;font-family:"Cookie",cursive!important}
+.bmc-btn-text{margin-left:8px;white-space:nowrap;line-height:1}
+kbd{font:11px ui-monospace,monospace;border:1px solid #4a3b3a;border-bottom-width:2px;border-radius:3px;padding:0 4px;background:#fff}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#4a3b3a;color:#fff;padding:8px 16px;border-radius:6px;z-index:99;display:none;max-width:80vw}
+a.manual{color:#4a3b3a;text-decoration:none;border:1px solid #4a3b3a;border-radius:3px;padding:3px 8px;background:#f4d35e;font-weight:600}
+a.manual:hover{background:#e8c443}
+.modal{position:fixed;inset:0;background:rgba(40,30,30,.55);z-index:50;display:flex;align-items:center;justify-content:center}
+.dlg{background:#fefefd;border:3px solid #4a3b3a;border-radius:8px;padding:18px;width:min(520px,92vw);max-height:80vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.layout.fx{grid-template-columns:280px minmax(0,1fr) 320px}
+.panel.centre{background:var(--bg);padding:0;display:flex;flex-direction:column;overflow:auto}
+.cbody{padding:12px 16px 40px;max-width:900px;width:100%}
+.cbody h2{font-size:12px;margin:18px 0 8px;color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+.vizbox{border:1px solid #4a3b3a;border-radius:6px;background:#fff;overflow:hidden}
+.vizbox canvas{display:block}
+.vizinfo{padding:4px 10px;font-size:12px;color:var(--muted);background:#f1efeb;border-top:1px solid #ddd}
+.ctl{display:grid;grid-template-columns:230px minmax(0,1fr) 64px;gap:10px;align-items:center;margin:7px 0}
+.ctl.notes{grid-template-columns:70px minmax(0,1fr) 54px 36px minmax(0,1fr) 40px 30px}
+.ctl label{color:var(--muted)}
+.ctl input[type=range]{width:100%;height:22px}
+.ctl .val{font:12px ui-monospace,monospace;color:var(--accent);text-align:right}
+pre.cmds{background:#fff;border:1px solid #4a3b3a;border-radius:4px;padding:10px;font:12px/1.5 ui-monospace,monospace;white-space:pre-wrap;margin:6px 0}
+@media(max-width:1000px){.ctl{grid-template-columns:130px minmax(0,1fr) 54px}}
+</style></head><body>
+<header>
+  <a class="site-logo" href="https://t-arg.github.io/" title="TEAM a.r.g." target="_blank" rel="noopener noreferrer"><img src="data:image/gif;base64,R0lGODlheQAuAMIFAEc8Okg8OUY9Nk5BPv7+/P///////////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAcALAAAAAB5AC4AAAP+eHrRHivKSau9OOudA/kf4HBkaZ5PCnEe6DrDKc/z0LpfEG83DqrAxo5GNNk+tkduiOklB74oTheswipJq5CSvSqOBHDux7T0WjCptKeO6iTJ9uu9EJMP4Dz0XKacpw8DXYFyhXR4bIUEh4lLLWINi1N9En9hUIBrSFoqmItfTlaeizF5aZJhjR6Cd2Yve6o4rDqoiks5iCBxakJkjze0m7qeHr24ri9twTlopLY/uDd2ysGRtbdiT2OLwILeOw5Tco2oy4q0VMLPzrqJ6T/h13MPCsU4AIMpAFL428/Fj/b5+KYJWhSBLkQY9BGpGKJp8v75wyGgokUBY6w16jL+ioy6dRPn2LDBgBtDkAbNwUshyF6qgSpcsCoHciY5ew0Y7Hp1aV01W+EAMgQyZwzEcc3cjMzZ0I1JnyF5WXspa+rNeCifDpUEQchUeMy+AopHzg0adw3fwTxqi61XkgA7ivjmDaEsb2jsUvu4UslBrFnL4uyapSqQjn3RIA7rV2HWTWJBkptLZQFAYFrWYL3KUi1Kv48jQua2AJ+xVEDm8tv8zLRZ0DAD6I3KSzOVFfVEnA3CjTNYoJFjvlZV9qRZESIipOhNFHDR38DHwp5H3J3T4TmVB+XNbHYOux4AeL+eODIB3Y3Q34uFfYKSKiuZPTe6mLkD9ETlM8YeP1P+e/foISebPOHMtBBXux2Wj3A92cfJfvKZx41ufsDHxnYQMsbJdvnpt6EVw4imYQWylShgdeLFlOCDCN6X4gMvarHPgwMKJiCJ8A1loYYf2lfeh5dlJqJ9OHKnY3M8inLEckkK1xyQto1QSYp03YddGsg5qANdg1xioJaBrJiWV1S0NF1f7kUyI2bBWRgJlwseKROceM35zSp7tMSNmebRU0lYjOkpHSFbFhfaY+OBIB6fR1ZSTGG3pTgojIvECOSlmLJ4Hj47LUGSZUFyqF+TsPAYJTVnUscgczsJYYef9Ty1HIMs1XlbGUFol6ujuxaJGwOmYQaJH6TAkA6DVQbN1YWuQIBaBbPNkvjErwzcBl1X9JiyCjN4GXpMmlbUE8ggzm65LIkvVBAsQ8Cet4K2jkDXxqe8unpuCqBIGUgd3iDzLQUC5BMDTnUIhAk+JT1aBXgVSlltdviKSwesGwwgEMIo/BABJOBo7O8n4Gb38AoRVzsErCpY8EQNXtTRchaUuLxEw0Hs0G3JeJgp8ZZF9HzCyjRHqx259VLs89E915rFyNUiMgI9uRqN9NQsoMxUNO8+jXXKaFDtNQl08VvKFoKI7XQpcJ79tQQJAAA7" alt="TEAM a.r.g."></a>
+  <h1>ATMlib Sound Effects Editor <span style="color:#6b5f5e;font-weight:500">v0.1.1</span></h1>
+  <span class="sep"></span>
+  <button id="btnPlay" class="play">▶ Play</button>
+  <label title="Ticks per second of the music this effect will be played over">Test tempo <input id="tempo" type="number" min="4" max="127" value="30"></label>
+  <span class="sep"></span>
+  <button id="btnUndo" class="ghost" title="Undo (Ctrl+Z)">↶</button><button id="btnRedo" class="ghost" title="Redo">↷</button>
+  <button id="btnNew" class="ghost">New</button><button id="btnReset" class="ghost" title="Forget the autosave and start over">Reset</button><button id="btnOpen" class="ghost">Open…</button><button id="btnSave" class="ghost">Save</button>
+  <a class="manual" href="manual.html" target="_blank" rel="noopener">📖 Manual</a>
+  <input id="fileOpen" type="file" accept=".json,.atmsfx" hidden>
+  <div class="bmc-slot"><a class="bmc-btn" target="_blank" rel="noopener noreferrer" href="https://buymeacoffee.com/TEAMarg">☕<span class="bmc-btn-text">Cool tool? Buy us a coffee</span></a></div>
+</header>
+<div class="layout fx">
+  <aside class="panel left" id="left"></aside>
+  <main class="panel centre" id="centre"></main>
+  <aside class="panel right" id="right"></aside>
+</div>
+<div id="toast"></div>
+<script>
+var AtmLib=(()=>{var _scriptName=globalThis.document?.currentScript?.src;return async function(moduleArg={}){var Module=moduleArg;var ENVIRONMENT_IS_WEB=!!globalThis.window;var ENVIRONMENT_IS_WORKER=!!globalThis.WorkerGlobalScope;var ENVIRONMENT_IS_NODE=globalThis.process?.versions?.node&&globalThis.process?.type!="renderer";var programArgs=[];var thisProgram="./this.program";var quit_=(status,toThrow)=>{throw toThrow};if(typeof __filename!="undefined"){_scriptName=__filename}else if(ENVIRONMENT_IS_WORKER){_scriptName=self.location.href}var scriptDirectory="";var readAsync,readBinary;if(ENVIRONMENT_IS_NODE){var fs=require("node:fs");scriptDirectory=__dirname+"/";readBinary=filename=>{filename=isFileURI(filename)?new URL(filename):filename;var ret=fs.readFileSync(filename);return ret};readAsync=async(filename,binary=true)=>{filename=isFileURI(filename)?new URL(filename):filename;var ret=fs.readFileSync(filename,binary?undefined:"utf8");return ret};if(process.argv.length>1){thisProgram=process.argv[1].replace(/\\/g,"/")}programArgs=process.argv.slice(2);quit_=(status,toThrow)=>{process.exitCode=status;throw toThrow}}else if(ENVIRONMENT_IS_WEB||ENVIRONMENT_IS_WORKER){try{scriptDirectory=new URL(".",_scriptName).href}catch{}{if(ENVIRONMENT_IS_WORKER){readBinary=url=>{var xhr=new XMLHttpRequest;xhr.open("GET",url,false);xhr.responseType="arraybuffer";xhr.send(null);return new Uint8Array(xhr.response)}}readAsync=async url=>{if(isFileURI(url)){return new Promise((resolve,reject)=>{var xhr=new XMLHttpRequest;xhr.open("GET",url,true);xhr.responseType="arraybuffer";xhr.onload=()=>{if(xhr.status==200||xhr.status==0&&xhr.response){resolve(xhr.response);return}reject(xhr.status)};xhr.onerror=reject;xhr.send(null)})}var response=await fetch(url,{credentials:"same-origin"});if(response.ok){return response.arrayBuffer()}throw new Error(response.status+" : "+response.url)}}}else{}var out=console.log.bind(console);var err=console.error.bind(console);var wasmBinary;var ABORT=false;var isFileURI=filename=>filename.startsWith("file://");class EmscriptenEH{}class EmscriptenSjLj extends EmscriptenEH{}function binaryDecode(bin){for(var i=0,l=bin.length,o=new Uint8Array(l),c;i<l;++i){c=bin.charCodeAt(i);o[i]=~c>>8&c}return o}var runtimeInitialized=false;function updateMemoryViews(){var b=wasmMemory.buffer;HEAP8=new Int8Array(b);HEAP16=new Int16Array(b);Module["HEAPU8"]=HEAPU8=new Uint8Array(b);HEAP32=new Int32Array(b);HEAPU32=new Uint32Array(b);Module["HEAPF32"]=HEAPF32=new Float32Array(b);HEAPF64=new Float64Array(b);HEAP64=new BigInt64Array(b)}function preRun(){var preRun=Module["preRun"];if(preRun){if(typeof preRun=="function")preRun=[preRun];onPreRuns.push(...preRun)}callRuntimeCallbacks(onPreRuns)}function initRuntime(){runtimeInitialized=true;wasmExports["__wasm_call_ctors"]()}function postRun(){var postRun=Module["postRun"];if(postRun){if(typeof postRun=="function")postRun=[postRun];onPostRuns.push(...postRun)}callRuntimeCallbacks(onPostRuns)}function abort(what){Module["onAbort"]?.(what);what=`Aborted(${what})`;err(what);ABORT=true;what+=". Build with -sASSERTIONS for more info.";var e=new WebAssembly.RuntimeError(what);throw e}var wasmBinaryFile;function findWasmBinary(){return binaryDecode(' asm   "``  ` ` ` `` envemscripten_resize_heap  \r   p&A A	 A	 A°	 A	 A 	memory __wasm_call_ctors 	cia_countciaoscATM_playroutine atm_sfx atm_stop \natm_active \natm_render pcmhalf__indirect_function_table malloc free setThrew \r_emscripten_stack_restore _emscripten_stack_alloc emscripten_stack_get_current 	\nÎP\r ¦A	-  !A	-  !	AÊ	-  !\nA	-  !A!@A ! ! @@@@@ "\r@AÉ	-  @ \nAÿq vAq\r AlA : °	 \nAÿq vAq! A<lAÐ	j   G\rA !AÀ" - 1"@    - 2" AqO@AÄ	 AvAþ q/; A  Aj: 2  , 7"@    - 8" Aÿ qO@A!    -  AuArj": @ Aÿq"@A?! AÀ I\r   :  !   AÿqAt/;(A  Aj: 8  - +"@  - ,!@  - -"\r  AÀ q"@  /(  - * ÀjÁ!  ÀA H\r A  A H\r  AµÉ   AµÉ O AÿqAÀ I! @   ;(   : *   AjA   A?qI: -@  - ."E\r   - "E\r   - /"Aq  - 0"AqK@   Aj: 0@@ Aàq"@@ A G\r  AÿF\r  AÀ qE\r  A : 0  A : 0 AÿF@A !  Avj!  AÀ : 0 Aq Avj j!   AÿqAt  , 3AtjAj/ ;(  - 4"@@  - 5"AÀ qE@    - *A  k   , 6"A N"j"A  A J: *  AµÉ   /(A  k   , 6"A N"jÁ"A  A J" AµÉ N;(   AjAA   Aq AqI: 6  /$"AÿÿF\r E@A~ w!  Aj!  Aj!  Aj!  ( !A !@   "Aj"6 @@@ -  "A?M@   :        - 3 j":  AÿqA At/;(  - ,E@    - 2: *  - /A qE\rA !  A : 0 AM@A !@@@@@@@@@@@@@@@@@@@@@ A@j"`	\n\r    Aj6 Aó	 - :     Aj6 A¯\n - :     Aj6 Aë\n - :     Aj"6 A§ - :     Aj"6    - ": 2   : *   Aj"6  - !  AÀ A  AG: ,   : +   Aj6  - !   Aj"6    : +   - ": , AG\r   AÀ r: ,  A : +   Aj6  - !   Aj"6    : .   - : /   Aj"6    - : 1  A : 1   Aj"6     - 3 - j: 3   Aj"6    - : 3  A : 3\r - !   Aj"6    : 4A !   - AÀ A  AGj: 5  A : 4   Aj"6    - : 7\n  A : 7	  Aÿ: .   Aj"6    - : /  A : .   Aj"6 AÈ	 - :     Aj"6 A	 	 - j"	:  A	Aú  	Aÿqn;    Aj"6 A	 - "	:  A	Aú  	n;  \rE@  Aÿÿ;$  A : *AÊ	 \n q"\n:  Aÿ!A	Aÿ:  A	 A ts":    Aÿÿ;$  A : * AßM@ Ak!A !  ! AàF@@ AtAÿq ( ,  "Aÿ qr! Aj! A H\r  AÁ j! AüI\r  AýM@A ! AüG@   Aj"6  - !   Aj"6 A	( ! -  "  - \'G@   - "j  - &:     - "j  - \':     - ""Atj  k;    : \'   Aj: "  /$!   : &   A	(  Atj/ j"6  ! AþF@  - &"E@A	( "  - ""E\r   Ak": "     Aÿq"Atj/ j"6     j-  : &    j-  : \'   Ak: &A	( !A !   A	(   - \'Atj/ j"6 @ AtAÿq ( ,  "Aÿ qr! Aj! A H\r     j"6 A !   ;$ ! Aÿÿq"E\r  AÿÿF\r   Ak;$   Ak;$ Aj"AG\r@ \r  Aÿq vAq\r  AF@AÂ	  - *Av:   Al"  /(;²	   - *: °	  AÿqAIqE\r A§-  "A Aë\n-  "A¯\n-  "Aó	-  "jjkAÿqG@AÐ	A	( " A	( " Atj/ j6 Aô	A ; A\n    Atj/ j6 A°\nA ; AÈ\n    Atj/ j6 Aì\nA ;   Atj/ !Að!A	Að:  A   j6 A¨A ;  AI\r AÐ	A Aðü AüA :   Aj"AG@ ! A ! \r\rAÿA  AL" AÿN"@A   ü\n   A :  Aÿq"AM@Aü-  " AqE@A	A; AÄ	A; A¬A; AÉ	A:  A	Að:  A	A	-  "A ":  A	Aú  n; AôB 7 AìB 7 AäB 7 AÜB 7 AÔB 7 AÌB 7 AÄB 7 AÀA6 A	 :  AÊ	A t:   AÿqAF@AÄ	A; Aü  Ar:  A	A; ? AÐ	A Aðü A	Að:  A	Aÿ:  AÈ	A :  AÉ	A :  AÊ	A :  AüA :   Aü-  AvAqå@Aü-  Aq@A! A L\rA	/ !@A	 Ak";  AÿÿqE@A	AA	/ " AM; A	/ !A´	A´	/ A²	/ j"; Aº	Aº	/ A¸	/ j"; AÀ	AÀ	/ A¾	/ j"; AÄ	AÄ	/ "AvAq At"	r A\rvAqs;    AtjA A¶	-  "k  ÁA HA°	-  "A  k AþqAv"At qAIjA¼	,   AvAsÀlAvjA AÂ	-  "k  	ÁA HjÀ²C  ÀB8  Aj" G\r  A L\r  At"E\r   A  ü     $  #   kApq" $    # T~@  ­B|BøÿÿÿA	( " ­|"BÿÿÿÿX@ §"? AtM\r  \rAA06 AA	 6   á\'# Ak"\n$ @@@@@@@@@@@@  AôM@A( "A  AjAøq  AI"Av"v" Aq@@  AsAq j"At"A¬j"  (´"("F@A A~ wq6    6   6 Aj!   Ar6  j" (Ar6\r A( "M\r  @@   tA t" A   krqh"At"A¬j" (´" ("F@A A~ wq"6   6  6   Ar6   j"  k"Ar6   j 6  @ AxqA¬j!A( ! A Avt"qE@A  r6   (!  6  6  6  6  Aj! A 6 A 6 \rA( "E\r hAt(´"(Axq k! !@@ (" E@ (" E\r  (Axq k"   K"!    !  ! (!	  (" G@ ("  6   6 (" Aj ("E\r Aj!@ ! " Aj!  ("\r   Aj!  ("\r  A 6 A!  A¿K\r   Aj"Axq!A( "	E\r A!  AôÿÿM@ A& Avg" kvAq  AtkA>j!A  k!@@@ At(´"E@A ! A !  A AvkA  AGt!@@ (Axq k" O\r  ! "\r A ! !    ("   AvAqj("F   !  At! "\r    rE@A !A t" A   kr 	q" E\r  hAt(´!   E\r@  (Axq k" I!   !    !  ("   (" \r  E\r  A(  kO\r  (!  (" G@ ("  6   6\n (" Aj ("E\r Aj!@ ! " Aj!  ("\r   Aj!  ("\r  A 6 	 A( " M@A( !@   k"AO@  j" Ar6   j 6   Ar6   Ar6   j"   (Ar6A !A !A 6 A 6  Aj!  A( "I@A  k"6 AA( "  j"6   Ar6   Ar6  Aj! A !  A/j"AÜ( @Aä( AèB7 AàB 7 AÜ \nAjApqAØªÕªs6 AðA 6 AÀA 6 A "j"A  k"q" M\r\nA¼( "@A´( " j"	 M\r  	I\rAÀ-  Aq\r@@A( "@AÄ! @  ( " M@    (jI\r  (" \r A \n"AF\r !Aà( " Ak" q@  k  jA   kqj!  O\rA¼( " @A´( " j" M\r   I\r \n"  G\r  k q"\n"  (   (jF\r ! @  AF\r   A0jO\r Aä( "  kjA  kq"\nAF\r  j!  !  !  AG\rA ! A !  AG\rAÀAÀ( Ar6  \n!A \n!  AF\r  AF\r   M\r   k" A(jM\rA´A´(  j" 6 A¸(   I@A¸  6 @@@A( "@AÄ! @   ( "  ("jF\r  (" \r A( " A    ME@A 6 A ! AÈ 6 AÄ 6 A¤A6 A¨AÜ( 6 AÐA 6 @  At" A¬j"6´  6¸  Aj" A G\r A A(k" Ax kAq"k"6 A  j"6   Ar6   jA(6A Aì( 6   O\r   I\r   (Aq\r     j6A Ax kAq" j"6 AA(  j"  k" 6    Ar6  jA(6A Aì( 6 A(  K@A 6   j!AÄ! @@   ( "G@  (" \r  - AqE\rAÄ! @@  ( " M@    (j"I\r  (! A A(k" Ax kAq"k"6 A  j"6   Ar6   jA(6A Aì( 6   A\' kAqjA/k"    AjI"A6 AÌ) 7 AÄ) 7AÌ Aj6 AÈ 6 AÄ 6 AÐA 6  Aj! @  A6  Aj!  Aj!   I\r   F\r   (A~q6   k"Ar6  6  AÿM@ AøqA¬j! A( "A Avt"qE@A  r6     (!   6  6A!AA!  AÿÿÿM@ A& Avg" kvAq  AtrA>s!    6 B 7  AtA´j!@@A( "A  t"qE@A  r6   6   6 A  AvkA   AGt!  ( !@ "(Axq F\r  Av!  At!   Aqj"("\r   6  6A! ! ! A ("  6  6   6A ! A!A j 6   j  6 A( "  M\r A   k"6 AA( "  j"6   Ar6   Ar6  Aj! AA06 A !    6     ( j6 Ax kAqj"	 Ar6 Ax kAqj"  	j"k!@A(  F@A 6 AA(  j"6   Ar6A(  F@A 6 AA(  j"6   Ar6  j 6  ("AqAF@ Axq! (!@ AÿM@ ("  F@AA( A~ Avwq6    6   6 (!@  G@ (" 6  6@ (" Aj ("E\r Aj! @  ! "Aj!  ("\r  Aj!  ("\r  A 6 A ! E\r @ (" At"(´ F@ A´j 6  \rAA( A~  wq6 @  (F@  6  6 E\r  6 ("@  6  6 ("E\r   6  6  j"(!  j!  A~q6  Ar6  j 6  AÿM@ AøqA¬j!A( "A Avt"qE@A  r6   (!  6  6  6  6A! AÿÿÿM@ A& Avg"kvAq AtrA>s!  6 B 7 AtA´j!@@A( " A t"qE@A   r6   6   6 A AvkA  AGt! ( ! @  "(Axq F\r Av!  At!   Aqj"(" \r   6  6  6  6 (" 6  6 A 6  6  6 	Aj! @ E\r @ ("At"(´ F@ A´j  6   \rA 	A~ wq"	6 @  (F@   6   6  E\r   6 ("@   6   6 ("E\r    6   6@ AM@   j" Ar6   j"   (Ar6  Ar6  j" Ar6  j 6  AÿM@ AøqA¬j! A( "A Avt"qE@A  r6     (!   6  6   6  6A!  AÿÿÿM@ A& Avg" kvAq  AtrA>s!    6 B 7  AtA´j!@@ 	A  t"qE@A  	r6   6   6 A  AvkA   AGt!  ( !@ "(Axq F\r  Av!  At!   Aqj"("\r   6  6  6  6 ("  6  6 A 6  6   6 Aj! @ 	E\r @ ("At"(´ F@ A´j  6   \rA A~ wq6 @  	(F@ 	  6 	  6  E\r   	6 ("@   6   6 ("E\r    6   6@ AM@   j" Ar6   j"   (Ar6  Ar6  j" Ar6  j 6  @ AxqA¬j!A( ! A Avt" qE@A  r6   (!   6   6   6   6A 6 A 6  Aj!  \nAj$   á@  E\r   Ak"  Ak( "Axq" j!@ Aq\r  AqE\r  ( "k"A( I\r   j! @@@A(  G@ (! AÿM@  ("G\rAA( A~ Avwq6  (!  G@ (" 6  6 (" Aj ("E\r Aj!@ ! "Aj! ("\r  Aj! ("\r  A 6  ("AqAG\rA  6   A~q6   Ar6   6   6  6A ! E\r @ ("At"(´ F@ A´j 6  \rAA( A~ wq6 @  (F@  6  6 E\r  6 ("@  6  6 ("E\r   6  6  O\r  ("AqE\r @@@@ AqE@A(  F@A 6 AA(   j" 6    Ar6 A( G\rAA 6 AA 6 A( " F@A 6 AA(   j" 6    Ar6   j  6  Axq  j!  (! AÿM@ (" F@AA( A~ Avwq6   6  6 (!  G@ (" 6  6 (" Aj ("E\r Aj!@ ! "Aj! ("\r  Aj! ("\r  A 6   A~q6   Ar6   j  6 A ! E\r @ ("At"(´ F@ A´j 6  \rAA( A~ wq6 @  (F@  6  6 E\r  6 ("@  6  6 ("E\r   6  6   Ar6   j  6   G\r A  6   AÿM@  AøqA¬j!A( "A  Avt" qE@A   r6   (!   6   6  6   6A!  AÿÿÿM@  A&  Avg"kvAq AtrA>s!  6 B 7 AtA´j!@A( "A t"qE@A  r6   6 A!A  A AvkA  AGt! ( !@ "(Axq  F\r Av! At!  Aqj"("\r   6A! !A!  !  (" 6  6A! A!A !  j 6   6   j 6 A¤A¤( Ak"A 6  Aô( E@Aø 6 Aô  6  A~&7J]r¸Òî*Knºä?p¤ÜUÝ\'uÈ }àI¸-©-	¹	M\nê\n@úÀ\roZS[rÔ õ#Þ´ ¦"µ$ A	ðÿ  ')}function getBinarySync(file){return file}async function getWasmBinary(binaryFile){return getBinarySync(binaryFile)}async function instantiateArrayBuffer(binaryFile,imports){try{var binary=await getWasmBinary(binaryFile);var instance=await WebAssembly.instantiate(binary,imports);return instance}catch(reason){err(`failed to asynchronously prepare wasm: ${reason}`);abort(reason)}}async function instantiateAsync(binary,binaryFile,imports){return instantiateArrayBuffer(binaryFile,imports)}function getWasmImports(){var imports={env:wasmImports,wasi_snapshot_preview1:wasmImports};return imports}async function createWasm(){function receiveInstance(instance){wasmExports=instance.exports;assignWasmExports(wasmExports);updateMemoryViews();return wasmExports}function receiveInstantiationResult(result){return receiveInstance(result["instance"])}var info=getWasmImports();var instantiateWasm=Module["instantiateWasm"];if(instantiateWasm){return new Promise(resolve=>{instantiateWasm(info,inst=>resolve(receiveInstance(inst)))})}wasmBinaryFile??=findWasmBinary();var result=await instantiateAsync(wasmBinary,wasmBinaryFile,info);var exports=receiveInstantiationResult(result);return exports}class ExitStatus{name="ExitStatus";constructor(status){this.message=`Program terminated with exit(${status})`;this.status=status}}var callRuntimeCallbacks=callbacks=>{while(callbacks.length>0){callbacks.shift()(Module)}};var onPostRuns=[];var onPreRuns=[];var noExitRuntime=true;var stackRestore=val=>__emscripten_stack_restore(val);var stackSave=()=>_emscripten_stack_get_current();var abortOnCannotGrowMemory=requestedSize=>{abort("OOM")};var HEAPU8;var _emscripten_resize_heap=requestedSize=>{var oldSize=HEAPU8.length;requestedSize>>>=0;abortOnCannotGrowMemory(requestedSize)};var getCFunc=ident=>{var func=Module["_"+ident];return func};var HEAP8;var writeArrayToMemory=(array,buffer)=>{HEAP8.set(array,buffer)};var lengthBytesUTF8=str=>{var len=0;for(var i=0;i<str.length;++i){var c=str.charCodeAt(i);if(c<=127){len++}else if(c<=2047){len+=2}else if(c>=55296&&c<=57343){len+=4;++i}else{len+=3}}return len};var stringToUTF8Array=(str,heap,outIdx,maxBytesToWrite)=>{if(!(maxBytesToWrite>0))return 0;var startIdx=outIdx;var endIdx=outIdx+maxBytesToWrite-1;for(var i=0;i<str.length;++i){var u=str.codePointAt(i);if(u<=127){if(outIdx>=endIdx)break;heap[outIdx++]=u}else if(u<=2047){if(outIdx+1>=endIdx)break;heap[outIdx++]=192|u>>6;heap[outIdx++]=128|u&63}else if(u<=65535){if(outIdx+2>=endIdx)break;heap[outIdx++]=224|u>>12;heap[outIdx++]=128|u>>6&63;heap[outIdx++]=128|u&63}else{if(outIdx+3>=endIdx)break;heap[outIdx++]=240|u>>18;heap[outIdx++]=128|u>>12&63;heap[outIdx++]=128|u>>6&63;heap[outIdx++]=128|u&63;i++}}heap[outIdx]=0;return outIdx-startIdx};var stringToUTF8=(str,outPtr,maxBytesToWrite)=>stringToUTF8Array(str,HEAPU8,outPtr,maxBytesToWrite);var stackAlloc=sz=>__emscripten_stack_alloc(sz);var stringToUTF8OnStack=str=>{var size=lengthBytesUTF8(str)+1;var ret=stackAlloc(size);stringToUTF8(str,ret,size);return ret};var UTF8Decoder=globalThis.TextDecoder&&new TextDecoder;var findStringEnd=(heapOrArray,idx,maxBytesToRead,ignoreNul)=>{var maxIdx=idx+maxBytesToRead;if(ignoreNul)return maxIdx;while(heapOrArray[idx]&&!(idx>=maxIdx))++idx;return idx};var UTF8ArrayToString=(heapOrArray,idx=0,maxBytesToRead,ignoreNul)=>{var endPtr=findStringEnd(heapOrArray,idx,maxBytesToRead,ignoreNul);if(endPtr-idx>16&&heapOrArray.buffer&&UTF8Decoder){return UTF8Decoder.decode(heapOrArray.subarray(idx,endPtr))}var str="";while(idx<endPtr){var u0=heapOrArray[idx++];if(!(u0&128)){str+=String.fromCharCode(u0);continue}var u1=heapOrArray[idx++]&63;if((u0&224)==192){str+=String.fromCharCode((u0&31)<<6|u1);continue}var u2=heapOrArray[idx++]&63;if((u0&240)==224){u0=(u0&15)<<12|u1<<6|u2}else{u0=(u0&7)<<18|u1<<12|u2<<6|heapOrArray[idx++]&63}if(u0<65536){str+=String.fromCharCode(u0)}else{var ch=u0-65536;str+=String.fromCharCode(55296|ch>>10,56320|ch&1023)}}return str};var UTF8ToString=(ptr,maxBytesToRead,ignoreNul)=>ptr?UTF8ArrayToString(HEAPU8,ptr,maxBytesToRead,ignoreNul):"";var ccall=(ident,returnType,argTypes,args,opts)=>{var toC={string:str=>{var ret=0;if(str!==null&&str!==undefined&&str!==0){ret=stringToUTF8OnStack(str)}return ret},array:arr=>{var ret=stackAlloc(arr.length);writeArrayToMemory(arr,ret);return ret}};function convertReturnValue(ret){if(returnType==="string"){return UTF8ToString(ret)}if(returnType==="boolean")return Boolean(ret);return ret}var func=getCFunc(ident);var cArgs=[];var stack=0;if(args){for(var i=0;i<args.length;i++){var converter=toC[argTypes[i]];if(converter){if(!stack)stack=stackSave();cArgs[i]=converter(args[i])}else{cArgs[i]=args[i]}}}var ret=func(...cArgs);function onDone(ret){if(stack)stackRestore(stack);return convertReturnValue(ret)}ret=onDone(ret);return ret};var cwrap=(ident,returnType,argTypes,opts)=>{var numericArgs=!argTypes||argTypes.every(type=>type==="number"||type==="boolean");var numericRet=returnType!=="string";if(numericRet&&numericArgs&&!opts){return getCFunc(ident)}return(...args)=>ccall(ident,returnType,argTypes,args,opts)};var HEAP16;var HEAP32;var HEAPU32;var HEAPF32;var HEAPF64;var HEAP64;function getValue(ptr,type="i8"){if(type.endsWith("*"))type="*";switch(type){case"i1":return HEAP8[ptr];case"i8":return HEAP8[ptr];case"i16":return HEAP16[ptr>>1];case"i32":return HEAP32[ptr>>2];case"i64":return HEAP64[ptr>>3];case"float":return HEAPF32[ptr>>2];case"double":return HEAPF64[ptr>>3];case"*":return HEAPU32[ptr>>2];default:abort(`invalid type for getValue: ${type}`)}}function setValue(ptr,value,type="i8"){if(type.endsWith("*"))type="*";switch(type){case"i1":HEAP8[ptr]=value;break;case"i8":HEAP8[ptr]=value;break;case"i16":HEAP16[ptr>>1]=value;break;case"i32":HEAP32[ptr>>2]=value;break;case"i64":HEAP64[ptr>>3]=BigInt(value);break;case"float":HEAPF32[ptr>>2]=value;break;case"double":HEAPF64[ptr>>3]=value;break;case"*":HEAPU32[ptr>>2]=value;break;default:abort(`invalid type for setValue: ${type}`)}}{if(Module["noExitRuntime"])noExitRuntime=Module["noExitRuntime"];if(Module["print"])out=Module["print"];if(Module["printErr"])err=Module["printErr"];if(Module["arguments"])programArgs=Module["arguments"];if(Module["thisProgram"])thisProgram=Module["thisProgram"];var preInit=Module["preInit"];if(preInit){if(typeof preInit=="function")Module["preInit"]=preInit=[preInit];while(preInit.length>0){preInit.shift()()}}}Module["cwrap"]=cwrap;Module["setValue"]=setValue;Module["getValue"]=getValue;var _ATM_playroutine,_atm_sfx,_atm_stop,_atm_active,_atm_render,_malloc,_free,_setThrew,__emscripten_stack_restore,__emscripten_stack_alloc,_emscripten_stack_get_current,memory,_cia_count,_cia,_osc,_pcm,_half,__indirect_function_table,wasmMemory;function assignWasmExports(wasmExports){_ATM_playroutine=Module["_ATM_playroutine"]=wasmExports["ATM_playroutine"];_atm_sfx=Module["_atm_sfx"]=wasmExports["atm_sfx"];_atm_stop=Module["_atm_stop"]=wasmExports["atm_stop"];_atm_active=Module["_atm_active"]=wasmExports["atm_active"];_atm_render=Module["_atm_render"]=wasmExports["atm_render"];_malloc=Module["_malloc"]=wasmExports["malloc"];_free=Module["_free"]=wasmExports["free"];_setThrew=wasmExports["setThrew"];__emscripten_stack_restore=wasmExports["_emscripten_stack_restore"];__emscripten_stack_alloc=wasmExports["_emscripten_stack_alloc"];_emscripten_stack_get_current=wasmExports["emscripten_stack_get_current"];memory=wasmMemory=wasmExports["memory"];_cia_count=Module["_cia_count"]=wasmExports["cia_count"].value;_cia=Module["_cia"]=wasmExports["cia"].value;_osc=Module["_osc"]=wasmExports["osc"].value;_pcm=Module["_pcm"]=wasmExports["pcm"].value;_half=Module["_half"]=wasmExports["half"].value;__indirect_function_table=wasmExports["__indirect_function_table"]}var wasmImports={emscripten_resize_heap:_emscripten_resize_heap};async function run(){preRun();var setStatus=Module["setStatus"];if(setStatus){setStatus("Running...");await new Promise(resolve=>setTimeout(resolve,1));setTimeout(setStatus,1,"")}if(ABORT)return;initRuntime();Module["onRuntimeInitialized"]?.();postRun()}var wasmExports;wasmExports=await createWasm();await run();
+;return Module}})();if(typeof exports==="object"&&typeof module==="object"){module.exports=AtmLib;module.exports.default=AtmLib}else if(typeof define==="function"&&define["amd"])define([],()=>AtmLib);
+
+</script><script>/* ATMlib Track Editor core: song model, presets, exporter, interpreter, renderer.
+   No DOM in here, so it can be tested in node. */
+(function (root) {
+'use strict';
+
+/* =====================================================================
+   Notes
+   ===================================================================== */
+const PC = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function noteName(n) { const i = n - 1; return PC[((i % 12) + 12) % 12] + (2 + Math.floor(i / 12)); }
+function noteMacro(n) { return 'ATM_NOTE_' + noteName(n).replace(/^([A-G])#(\d)$/, '$1$2_'); }
+function isBlackKey(n) { return [1, 3, 6, 8, 10].indexOf(((n - 1) % 12 + 12) % 12) >= 0; }
+const NOTE_MIN = 1, NOTE_MAX = 63;
+
+/* =====================================================================
+   Command table (values from ATMcmds.h / README section 3)
+   n = number of parameter bytes, sg = which args are signed
+   ===================================================================== */
+const OPS = {
+  vol:      { op: 0x40, mac: 'ATM_VOL',          n: 1 },
+  slvol:    { op: 0x41, mac: 'ATM_SL_VOL',       n: 1, sg: [1] },
+  slvola:   { op: 0x42, mac: 'ATM_SL_VOL_ADV',   n: 2, sg: [1, 0] },
+  slvoloff: { op: 0x43, mac: 'ATM_SL_VOL_OFF',   n: 0 },
+  slfrq:    { op: 0x44, mac: 'ATM_SL_FRQ',       n: 1, sg: [1] },
+  slfrqa:   { op: 0x45, mac: 'ATM_SL_FRQ_ADV',   n: 2, sg: [1, 0] },
+  slfrqoff: { op: 0x46, mac: 'ATM_SL_FRQ_OFF',   n: 0 },
+  arp:      { op: 0x47, mac: 'ATM_ARP',          n: 2 },
+  arpoff:   { op: 0x48, mac: 'ATM_ARP_OFF',      n: 0 },
+  nse:      { op: 0x49, mac: 'ATM_NOISE',        n: 1 },
+  nseoff:   { op: 0x4A, mac: 'ATM_NOISE_OFF',    n: 0 },
+  addtra:   { op: 0x4B, mac: 'ATM_ADD_TRA',      n: 1, sg: [1] },
+  settra:   { op: 0x4C, mac: 'ATM_SET_TRA',      n: 1, sg: [1] },
+  traoff:   { op: 0x4D, mac: 'ATM_TRA_OFF',      n: 0 },
+  trem:     { op: 0x4E, mac: 'ATM_TREM',         n: 2 },
+  tremoff:  { op: 0x4F, mac: 'ATM_TREM_OFF',     n: 0 },
+  vib:      { op: 0x50, mac: 'ATM_VIB',          n: 2 },
+  viboff:   { op: 0x51, mac: 'ATM_VIB_OFF',      n: 0 },
+  glis:     { op: 0x52, mac: 'ATM_GLIS',         n: 1 },
+  glisoff:  { op: 0x53, mac: 'ATM_GLIS_OFF',     n: 0 },
+  cut:      { op: 0x54, mac: 'ATM_CUT',          n: 1 },
+  cutoff:   { op: 0x55, mac: 'ATM_CUT_OFF',      n: 0 },
+  cue:      { op: 0x57, mac: 'ATM_CUE',          n: 1 },
+  addtmp:   { op: 0x9C, mac: 'ATM_ADD_TEMPO',    n: 1, sg: [1] },
+  settmp:   { op: 0x9D, mac: 'ATM_SET_TEMPO',    n: 1 }
+};
+const OP_BY_CODE = {};
+Object.keys(OPS).forEach(k => { OP_BY_CODE[OPS[k].op] = k; });
+
+/* parameter bytes per opcode, for the interpreter (0x56 unused) */
+function paramCount(op) {
+  if (op >= 0x40 && op <= 0x9F) {
+    if (OP_BY_CODE[op]) return OPS[OP_BY_CODE[op]].n;
+    if (op === 0x9E) return 4;
+    return 0;
+  }
+  return 0;
+}
+
+/* a command object: {b: [bytes], t: 'ATM_...'} */
+function mkCmd(key, args, ctx) {
+  const d = OPS[key];
+  args = args || [];
+  const bytes = [d.op];
+  const txt = [];
+  for (let i = 0; i < d.n; i++) {
+    let v = args[i] | 0;
+    const signed = d.sg && d.sg[i];
+    let s;
+    if (ctx && ctx.gv) {
+      if (key === 'vol' && i === 0) { const m = Math.trunc(v * ctx.gv / 100); bytes.push(m & 255); txt.push('MV(' + v + ')'); continue; }
+      if (key === 'slvol' && v < 0) {
+        const mag = -v; let m = Math.trunc((mag * ctx.gv + 50) / 100); if (m < 1) m = 1;
+        bytes.push((-m) & 255); txt.push('MS(' + mag + ')'); continue;
+      }
+    }
+    bytes.push(v & 255);
+    if (signed && v < 0) s = '(uint8_t)' + v; else s = String(v & 255);
+    if (!signed) s = String(v);
+    txt.push(s);
+  }
+  return { b: bytes, t: d.mac + (d.n ? '(' + txt.join(', ') + ')' : '') };
+}
+function delayCmds(n) {
+  const out = [];
+  while (n > 0) {
+    if (n <= 64) { out.push({ b: [0x9F + n], t: 'ATM_DELAY(' + n + ')' }); n = 0; }
+    else if (n <= 128) { out.push({ b: [0x9F + 64], t: 'ATM_DELAY(64)' }); n -= 64; }
+    else if (n <= 192) { out.push({ b: [0xE0, n - 65], t: 'ATM_LONG_DELAY(' + n + ')' }); n = 0; }
+    else { out.push({ b: [0xE0, 192 - 65], t: 'ATM_LONG_DELAY(192)' }); n -= 192; }
+  }
+  return out;
+}
+const CMD_RETURN = { b: [0xFE], t: 'ATM_RETURN' };
+const CMD_STOP = { b: [0x9F], t: 'ATM_STOP_CHAN' };
+function cmdGoto(i, cm) { return { b: [0xFC, i], t: 'ATM_GOTO(' + i + ')', cm: cm }; }
+function cmdRepeat(n, i, cm) { return { b: [0xFD, n, i], t: 'ATM_REPEAT(' + n + ', ' + i + ')', cm: cm }; }
+const CMD_SILENCE = { b: [0x00], t: '0x00', cm: 'note off' };
+
+/* =====================================================================
+   Chords for the arpeggio (README 4.6)
+   ===================================================================== */
+const CHORDS = [
+  { id: 'maj',  name: 'Major',            a: 0x43, two: false },
+  { id: 'min',  name: 'Minor',            a: 0x34, two: false },
+  { id: 'maj1', name: 'Major, 1st inv.',  a: 0x35, two: false },
+  { id: 'maj2', name: 'Major, 2nd inv.',  a: 0x54, two: false },
+  { id: 'min1', name: 'Minor, 1st inv.',  a: 0x45, two: false },
+  { id: 'min2', name: 'Minor, 2nd inv.',  a: 0x53, two: false },
+  { id: 'maj7', name: 'Maj7 (no 5th)',    a: 0x47, two: false },
+  { id: 'min7', name: 'm7 (no 5th)',      a: 0x37, two: false },
+  { id: 'sus4', name: 'Sus4',             a: 0x52, two: false },
+  { id: 'dim',  name: 'Diminished',       a: 0x33, two: false },
+  { id: 'aug',  name: 'Augmented',        a: 0x44, two: false },
+  { id: 'pow',  name: 'Power (root+5th)', a: 0x70, two: true  },
+  { id: 'oct',  name: 'Octave',           a: 0xC0, two: true  }
+];
+function chordById(id) { for (const c of CHORDS) if (c.id === id) return c; return null; }
+function chordByA(a, two) { for (const c of CHORDS) if (c.a === a && !!c.two === !!two) return c; for (const c of CHORDS) if (c.a === a) return c; return null; }
+function arpY(ticks, retrig, two) { return ((retrig ? 0x20 : 0) | (two ? 0x40 : 0) | ((Math.max(1, Math.min(32, ticks)) - 1) & 31)) & 255; }
+
+/* =====================================================================
+   Instruments (tonal channels CH0..CH2)
+   slide: none | vol(s) | volAdv(s,t) | frq(s) | frqAdv(s,t)
+   gate : none | arp(chord,ticks,retrig) | cut(n)
+   mod  : none | vib(d,r) | trem(d,r)
+   glis : none | up(ticks) | down(ticks)
+   cut  : notes are cut at their end when followed by a rest
+   ===================================================================== */
+function inst(o) {
+  return Object.assign({ id: '', name: '', cat: 'Lead', desc: '', vol: 38, slide: { k: 'none', s: 0, t: 0 }, gate: { k: 'none', chord: 'min', ticks: 1, retrig: true, n: 0 }, mod: { k: 'none', d: 0, r: 0 }, glis: { k: 'none', t: 2 }, cut: false, ch: '', demo: [34, 38, 41, 38] }, o);
+}
+const SL = (s) => ({ k: 'vol', s: s, t: 0 });
+const ARP = (chord, ticks) => ({ k: 'arp', chord: chord, ticks: ticks || 1, retrig: true, n: 0 });
+const INSTRUMENT_PRESETS = [
+  inst({ id: 'pluck',    name: 'Pluck lead',        cat: 'Lead', ch: 'CH0 pulse',  desc: 'Every note starts loud and decays (VOL 38, slide -2). The classic lead of Italo Night.', vol: 38, slide: SL(-2) }),
+  inst({ id: 'pluckSoft',name: 'Soft pluck',        cat: 'Lead', ch: 'CH0 / CH1', desc: 'Gentle, long decay (VOL 30, slide -1). Sounds like a bell or music box.', vol: 30, slide: SL(-1) }),
+  inst({ id: 'stab',     name: 'Short stab',        cat: 'Lead', ch: 'CH0 / CH1', desc: 'Very short, punchy note (VOL 40, slide -5).', vol: 40, slide: SL(-5) }),
+  inst({ id: 'sustain',  name: 'Sustain lead',      cat: 'Lead', ch: 'CH0 / CH1', desc: 'Constant volume until the note ends. Needs rests to separate notes.', vol: 36, cut: true }),
+  inst({ id: 'vibLead',  name: 'Vibrato lead',      cat: 'Lead', ch: 'CH0 / CH1', desc: 'Sustained note with a light vibrato (VIB 3,3).', vol: 34, mod: { k: 'vib', d: 3, r: 3 }, cut: true }),
+  inst({ id: 'staccato', name: 'Staccato gate',     cat: 'Lead', ch: 'CH0 / CH1', desc: 'Note gate: sounds 4 ticks, silent 4 ticks (CUT 0x23). Best with 8-tick notes and no transposition.', vol: 36, gate: { k: 'cut', chord: 'min', ticks: 1, retrig: true, n: 0x23 }, cut: true }),
+  inst({ id: 'riser',    name: 'Riser',             cat: 'Lead', ch: 'any', desc: 'Pitch climbs one semitone every 2 ticks while the note sounds.', vol: 34, glis: { k: 'up', t: 2 }, cut: true }),
+  inst({ id: 'dive',     name: 'Dive',              cat: 'Lead', ch: 'any', desc: 'Pitch falls one semitone every 2 ticks.', vol: 34, glis: { k: 'down', t: 2 }, cut: true }),
+  inst({ id: 'chordStabMin', name: 'Chord stab (minor)', cat: 'Chord', ch: 'CH1 square', desc: 'Fast arpeggio that dies away (VOL 24, slide -3, ARP). Italo Night stabs.', vol: 24, slide: SL(-3), gate: ARP('min', 1), demo: [34, 34, 37, 34] }),
+  inst({ id: 'chordStabMaj', name: 'Chord stab (major)', cat: 'Chord', ch: 'CH1 square', desc: 'Same, for major chords.', vol: 24, slide: SL(-3), gate: ARP('maj', 1), demo: [34, 34, 37, 34] }),
+  inst({ id: 'chordHoldMin', name: 'Held chord (minor)', cat: 'Chord', ch: 'CH1 square', desc: 'Arpeggio shimmers and fades over a bar (VOL 30, slide -1). Quest Theme chords.', vol: 30, slide: SL(-1), gate: ARP('min', 1), demo: [34] }),
+  inst({ id: 'chordHoldMaj', name: 'Held chord (major)', cat: 'Chord', ch: 'CH1 square', desc: 'Same, major.', vol: 30, slide: SL(-1), gate: ARP('maj', 1), demo: [34] }),
+  inst({ id: 'chordMaj7',name: 'Maj7 chord',        cat: 'Chord', ch: 'CH1 square', desc: 'Root, third and seventh (Escaper Droid).', vol: 30, slide: SL(-1), gate: ARP('maj7', 1), demo: [34] }),
+  inst({ id: 'chordMin7',name: 'm7 chord',          cat: 'Chord', ch: 'CH1 square', desc: 'Root, minor third and minor seventh (Sunday Market).', vol: 30, slide: SL(-1), gate: ARP('min7', 1), demo: [34] }),
+  inst({ id: 'padSlow',  name: 'Dreamy pad',        cat: 'Pad', ch: 'CH1 square', desc: 'Slow arpeggio with tremolo (VOL 26, TREM 1,7, 4 ticks per step). Lantern Lake pad.', vol: 26, mod: { k: 'trem', d: 1, r: 7 }, gate: ARP('min', 4), demo: [34] }),
+  inst({ id: 'padHold',  name: 'Swell pad (sustained)', cat: 'Pad', ch: 'CH1 square', desc: 'Sustained note with a slow tremolo.', vol: 28, mod: { k: 'trem', d: 1, r: 15 }, cut: true, demo: [34] }),
+  inst({ id: 'bassPluck',name: 'Pluck bass',        cat: 'Bass', ch: 'CH2 saw',   desc: 'Loud bass that decays fast (VOL 63, slide -5).', vol: 63, slide: SL(-5), demo: [10, 10, 22, 10] }),
+  inst({ id: 'bassSoft', name: 'Soft bass',         cat: 'Bass', ch: 'CH2 saw',   desc: 'One soft root per bar (VOL 30, slide -1).', vol: 30, slide: SL(-1), demo: [10] }),
+  inst({ id: 'bassSus',  name: 'Sustain bass',      cat: 'Bass', ch: 'CH2 saw',   desc: 'Constant-volume bass line.', vol: 50, cut: true, demo: [10, 10, 15, 10] }),
+  inst({ id: 'bassSub',  name: 'Sub bass',          cat: 'Bass', ch: 'CH2 saw',   desc: 'Medium decay (VOL 56, slide -2).', vol: 56, slide: SL(-2), demo: [10, 10, 5, 10] }),
+  inst({ id: 'kickTone', name: 'Kick (pitch drop)', cat: 'Drum', ch: 'CH1 / CH2', desc: 'Pitch falls fast: the Italo kick on a tonal channel. Use D3, 4-tick notes. Free of arpeggios.', slide: { k: 'frq', s: -127, t: 0 }, vol: 30, cut: true, demo: [15, 15, 15, 15] }),
+  inst({ id: 'tomTone',  name: 'Tom (pitch drop)',  cat: 'Drum', ch: 'CH1 / CH2', desc: 'Slower pitch fall, higher start. Play it at different pitches for a tom run.', slide: { k: 'frq', s: -50, t: 0 }, vol: 34, cut: true, demo: [27, 24, 20, 15] }),
+  inst({ id: 'zapDown',  name: 'Zap (falling)',     cat: 'FX', ch: 'any', desc: 'Laser that falls (slide -100).', slide: { k: 'frq', s: -100, t: 0 }, vol: 30, cut: true, demo: [46] }),
+  inst({ id: 'zapUp',    name: 'Zap (rising)',      cat: 'FX', ch: 'any', desc: 'Coin-like blip that rises (slide +60).', slide: { k: 'frq', s: 60, t: 0 }, vol: 30, cut: true, demo: [34] })
+];
+
+/* =====================================================================
+   Drum kit for the noise channel (CH3).  Recipes from README 8.1.
+   len = natural length in ticks (vol / slide), for drawing only.
+   ===================================================================== */
+const KIT_DEFAULT = {
+  kick:   { id: 'kick',   name: 'Kick',          vol: 48, sl: -12, color: '#6b3d3d', key: 'K' },
+  kickL:  { id: 'kickL',  name: 'Kick (long)',   vol: 56, sl: -7,  color: '#8a4a3a', key: 'L' },
+  snare:  { id: 'snare',  name: 'Snare',         vol: 44, sl: -5,  color: '#3d5c6b', key: 'S' },
+  snareT: { id: 'snareT', name: 'Snare (tight)', vol: 40, sl: -9,  color: '#3d6b6b', key: 'T' },
+  ghost:  { id: 'ghost',  name: 'Ghost snare',   vol: 16, sl: -4,  color: '#5c6b7a', key: 'G' },
+  chat:   { id: 'chat',   name: 'Closed hat',    vol: 14, sl: -7,  color: '#6b5a3d', key: 'H' },
+  ohat:   { id: 'ohat',   name: 'Open hat',      vol: 26, sl: -3,  color: '#8a7a3d', key: 'O' },
+  crash:  { id: 'crash',  name: 'Crash',         vol: 40, sl: -1,  color: '#5c3d6b', key: 'C' },
+  roll:   { id: 'roll',   name: 'Roll step',     vol: 36, sl: -9,  color: '#3d6b3d', key: 'R' }
+};
+const KIT_ORDER = ['kick', 'kickL', 'snare', 'snareT', 'ghost', 'chat', 'ohat', 'crash', 'roll'];
+function voiceLen(v) { return Math.max(1, Math.ceil(v.vol / Math.max(1, Math.abs(v.sl)))); }
+
+/* drum presets: hits as [tick, voice, volume?] */
+function rollSteps(start, count, step, v0, dv) { const h = []; for (let i = 0; i < count; i++) h.push([start + i * step, 'roll', v0 + dv * i]); return h; }
+function shift(h, d) { return h.map(x => [x[0] + d, x[1], x[2]]); }
+const BEAT_A = [[0, 'kick'], [4, 'chat'], [8, 'ohat']];
+const BEAT_B = [[0, 'snare'], [8, 'ohat']];
+function cat() { const out = []; for (let i = 0; i < arguments.length; i++) out.push.apply(out, arguments[i]); return out; }
+const DRUM_PRESETS = [
+  { id: 'italo',    cat: 'Groove', name: 'Italo disco',          len: 64, desc: 'Kick, hat, open hat / snare, open hat. From Italo Night.', hits: cat(BEAT_A, shift(BEAT_B, 16), shift(BEAT_A, 32), shift(BEAT_B, 48)) },
+  { id: 'italoFill',cat: 'Fill',   name: 'Italo disco + roll',   len: 64, desc: 'The groove with a snare roll on beat 4: use it on the last bar of a phrase.', hits: cat(BEAT_A, shift(BEAT_B, 16), shift(BEAT_A, 32), rollSteps(48, 8, 2, 22, 4)) },
+  { id: 'house',    cat: 'Groove', name: 'House 4-on-the-floor', len: 64, desc: 'Kick on every beat, hats in between.', hits: [0, 16, 32, 48].reduce((a, t) => a.concat([[t, 'kick'], [t + 4, 'chat'], [t + 8, 'ohat'], [t + 12, 'chat']]), []) },
+  { id: 'trance',   cat: 'Groove', name: 'Trance off-beat',      len: 64, desc: 'Kick on every beat, open hat on the off-beat.', hits: [0, 16, 32, 48].reduce((a, t) => a.concat([[t, 'kick'], [t + 8, 'ohat']]), []) },
+  { id: 'rock',     cat: 'Groove', name: 'Rock beat',            len: 64, desc: 'Kick 1 and 3, snare 2 and 4, hats on the off-beats.', hits: [[0, 'kick'], [8, 'chat'], [16, 'snare'], [24, 'chat'], [32, 'kick'], [40, 'kick'], [48, 'snare'], [56, 'chat']] },
+  { id: 'rockHat',  cat: 'Groove', name: 'Rock with 16th hats',  len: 64, desc: 'Busier hi-hat: closed hat every 4 ticks between the kick and snare.', hits: (function () { const h = []; for (let t = 0; t < 64; t += 4) { if (t === 0 || t === 32) h.push([t, 'kick']); else if (t === 16 || t === 48) h.push([t, 'snare']); else h.push([t, 'chat']); } return h; })() },
+  { id: 'synthpop', cat: 'Groove', name: 'Synth pop',            len: 64, desc: 'Kick, snare on 2 and 4, open hats on the off-beat, an extra kick.', hits: [[0, 'kick'], [8, 'ohat'], [16, 'snare'], [24, 'ohat'], [32, 'kick'], [40, 'ohat'], [44, 'kick'], [48, 'snare'], [56, 'ohat']] },
+  { id: 'halftime', cat: 'Groove', name: 'Half-time',            len: 64, desc: 'Slow and heavy: snare only on beat 3.', hits: [[0, 'kick'], [16, 'chat'], [24, 'kick'], [32, 'snare'], [48, 'chat'], [56, 'ohat']] },
+  { id: 'funk',     cat: 'Groove', name: 'Funk 16ths',           len: 64, desc: 'Syncopated kicks with ghost notes.', hits: [[0, 'kick'], [4, 'chat'], [8, 'ghost'], [12, 'chat'], [16, 'snare'], [20, 'chat'], [24, 'kick'], [28, 'ghost'], [32, 'chat'], [36, 'kick'], [40, 'chat'], [44, 'ghost'], [48, 'snare'], [52, 'chat'], [56, 'kick'], [60, 'chat']] },
+  { id: 'breakbeat',cat: 'Groove', name: 'Breakbeat',            len: 64, desc: 'Broken kick pattern.', hits: [[0, 'kick'], [8, 'chat'], [16, 'snare'], [24, 'ohat'], [28, 'kick'], [36, 'kick'], [40, 'chat'], [48, 'snare'], [56, 'chat'], [60, 'ghost']] },
+  { id: 'twostep',  cat: 'Groove', name: 'Two-step / D&B',       len: 64, desc: 'Fast and driving: kick, snare, kick, snare.', hits: [[0, 'kick'], [8, 'chat'], [16, 'snare'], [24, 'chat'], [28, 'chat'], [40, 'kick'], [48, 'snare'], [56, 'chat'], [60, 'chat']] },
+  { id: 'march',    cat: 'Groove', name: 'March',                len: 64, desc: 'Snare march with kick on 1 and 3.', hits: [[0, 'kick'], [8, 'ghost'], [16, 'snare'], [24, 'ghost'], [32, 'kick'], [40, 'ghost'], [48, 'snare'], [56, 'snareT'], [60, 'snareT']] },
+  { id: 'gallop',   cat: 'Groove', name: 'Gallop (C64 style)',   len: 64, desc: 'Fast kick gallop with hat.', hits: [[0, 'kick'], [8, 'kick'], [12, 'chat'], [16, 'snare'], [24, 'kick'], [28, 'chat'], [32, 'kick'], [40, 'kick'], [44, 'chat'], [48, 'snare'], [56, 'chat'], [60, 'chat']] },
+  { id: 'ambient',  cat: 'Groove', name: 'Sparse / ambient',     len: 64, desc: 'One soft kick per bar and a light hat.', hits: [[0, 'kickL'], [32, 'chat'], [48, 'ohat']] },
+  { id: 'waltz',    cat: 'Groove', name: 'Waltz (36 ticks)',     len: 36, desc: 'Three beats of 12 ticks: oom-pah-pah.', hits: [[0, 'kick'], [12, 'chat'], [24, 'chat']] },
+  { id: 'beatA',    cat: 'Beat', name: 'Beat A (16)',            len: 16, desc: 'Kick, hat, open hat: building block for beats 1 and 3.', hits: BEAT_A },
+  { id: 'beatB',    cat: 'Beat', name: 'Beat B (16)',            len: 16, desc: 'Snare and open hat: building block for beats 2 and 4.', hits: BEAT_B },
+  { id: 'rollBeat', cat: 'Fill', name: 'Snare roll, 1 beat',     len: 16, desc: 'Eight steps rising in volume.', hits: rollSteps(0, 8, 2, 22, 4) },
+  { id: 'rollHalf', cat: 'Fill', name: 'Snare roll, 2 beats',    len: 32, desc: 'Sixteen steps, rising.', hits: rollSteps(0, 16, 2, 18, 2) },
+  { id: 'rollBar',  cat: 'Fill', name: 'Snare build, 1 bar',     len: 64, desc: 'Sixteen steps over a whole bar: the classic build-up before a drop.', hits: rollSteps(0, 16, 4, 16, 2) },
+  { id: 'fill1',    cat: 'Fill', name: 'Fill: snare and kicks',  len: 16, desc: 'Short syncopated fill for the last beat.', hits: [[0, 'snare'], [4, 'ghost'], [6, 'snare'], [8, 'snareT'], [10, 'ghost'], [12, 'kick'], [14, 'snareT']] },
+  { id: 'crash',    cat: 'Fill', name: 'Crash',                  len: 32, desc: 'Long noise burst: mark the start of a section.', hits: [[0, 'crash']] },
+  { id: 'kickOnly', cat: 'Beat', name: 'Kick on every beat',     len: 64, desc: 'Just the kick, four to the bar.', hits: [[0, 'kick'], [16, 'kick'], [32, 'kick'], [48, 'kick']] },
+  { id: 'hatsOnly', cat: 'Beat', name: 'Hats only (8ths)',       len: 64, desc: 'Closed hat every 8 ticks.', hits: [0, 8, 16, 24, 32, 40, 48, 56].map(t => [t, 'chat']) }
+];
+
+/* =====================================================================
+   Song model
+   ===================================================================== */
+const COLORS = ['#5d4c4b', '#3d5c4a', '#3d4a6b', '#3d6b5c', '#6b5a3d', '#4a4a6b', '#5c3d6b', '#6b3d5c', '#6b3d4a', '#3d5c6b', '#6b5c3d', '#3d6b3d', '#6b4a3d', '#2f5d6b'];
+const CHANNELS = [
+  { name: 'CH0', wave: 'pulse',  tone: true },
+  { name: 'CH1', wave: 'square', tone: true },
+  { name: 'CH2', wave: 'saw',    tone: true },
+  { name: 'CH3', wave: 'noise',  tone: false }
+];
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+function newSong() {
+  return {
+    v: 1, name: 'newSong', title: '', tempo: 34, includeTempo: false, loop: true,
+    gameVol: false, gamePct: 60, barTicks: 64,
+    patterns: {}, order: [], lanes: [[], [], [], []], instruments: {}, kit: clone(KIT_DEFAULT),
+    seq: 1, mute: [false, false, false, false]
+  };
+}
+function uid(song, prefix) { return prefix + (song.seq++); }
+function pickColor(song) {
+  const used = {}; song.order.forEach(id => { used[song.patterns[id].color] = (used[song.patterns[id].color] || 0) + 1; });
+  let best = COLORS[0], bc = 1e9;
+  COLORS.forEach(c => { const n = used[c] || 0; if (n < bc) { bc = n; best = c; } });
+  return best;
+}
+function addPattern(song, kind, o) {
+  o = o || {};
+  const id = uid(song, 'p');
+  const P = {
+    id: id, name: o.name || (kind === 'drum' ? 'Drums ' : 'Pattern ') + id.slice(1), kind: kind,
+    len: o.len || 64, color: o.color || pickColor(song), inst: o.inst || null,
+    notes: o.notes ? clone(o.notes) : [], hits: o.hits ? clone(o.hits) : [], fx: o.fx ? clone(o.fx) : []
+  };
+  if (o.cut !== undefined) P.cut = o.cut;
+  if (o.preset) P.preset = o.preset;
+  song.patterns[id] = P; song.order.push(id);
+  return P;
+}
+function addPlacement(song, ch, pid, index, tra) {
+  const pl = { uid: uid(song, 'u'), pid: pid, tra: tra | 0 };
+  const lane = song.lanes[ch];
+  if (index === undefined || index > lane.length) index = lane.length;
+  lane.splice(index, 0, pl);
+  return pl;
+}
+function patternUses(song, pid) { let n = 0; song.lanes.forEach(l => l.forEach(p => { if (p.pid === pid) n++; })); return n; }
+function deletePattern(song, pid) {
+  song.lanes = song.lanes.map(l => l.filter(p => p.pid !== pid));
+  delete song.patterns[pid];
+  song.order = song.order.filter(x => x !== pid);
+}
+function duplicatePattern(song, pid) {
+  const S = song.patterns[pid];
+  const P = addPattern(song, S.kind, { name: S.name + ' copy', len: S.len, inst: S.inst, notes: S.notes, hits: S.hits, fx: S.fx, cut: S.cut });
+  return P;
+}
+function ensureInstrument(song, presetId) {
+  const pre = INSTRUMENT_PRESETS.filter(p => p.id === presetId)[0];
+  if (!pre) return null;
+  if (song.instruments[presetId]) return song.instruments[presetId];
+  song.instruments[presetId] = clone(pre);
+  return song.instruments[presetId];
+}
+function addDrumPreset(song, presetId) {
+  for (const id of song.order) if (song.patterns[id].preset === presetId) return song.patterns[id];
+  const pre = DRUM_PRESETS.filter(p => p.id === presetId)[0];
+  if (!pre) return null;
+  const hits = pre.hits.map(h => { const o = { t: h[0], d: h[1] }; if (h[2] !== undefined) o.v = h[2]; return o; });
+  return addPattern(song, 'drum', { name: pre.name, len: pre.len, hits: hits, preset: presetId });
+}
+function laneTicks(song, ch) { let n = 0; song.lanes[ch].forEach(pl => { const P = song.patterns[pl.pid]; if (P) n += P.len; }); return n; }
+function songTicks(song) { let n = 0; for (let c = 0; c < 4; c++) n = Math.max(n, laneTicks(song, c)); return n; }
+
+/* keep a tone pattern monophonic and inside its length */
+function normalizeTone(P) {
+  const out = [];
+  P.notes.sort((a, b) => a.t - b.t || b.l - a.l);
+  for (const n of P.notes) {
+    n.t = Math.max(0, Math.round(n.t)); n.l = Math.max(1, Math.round(n.l)); n.n = clamp(Math.round(n.n), NOTE_MIN, NOTE_MAX);
+    if (n.t >= P.len) continue;
+    if (n.t + n.l > P.len) n.l = P.len - n.t;
+    const prev = out[out.length - 1];
+    if (prev && prev.t === n.t) { out[out.length - 1] = n; continue; }
+    if (prev && prev.t + prev.l > n.t) prev.l = n.t - prev.t;
+    out.push(n);
+  }
+  P.notes = out;
+}
+/* write a note and make room for it (the new note wins) */
+function putNote(P, t, n, l) {
+  l = Math.max(1, Math.min(l, P.len - t));
+  P.notes = P.notes.filter(x => !(x.t >= t && x.t < t + l));
+  P.notes.forEach(x => { if (x.t < t && x.t + x.l > t) x.l = t - x.t; });
+  const note = { t: t, n: n, l: l };
+  P.notes.push(note); P.notes.sort((a, b) => a.t - b.t);
+  return note;
+}
+function putHit(P, t, d, v) {
+  P.hits = P.hits.filter(h => h.t !== t);
+  const h = { t: t, d: d }; if (v !== undefined) h.v = v;
+  P.hits.push(h); P.hits.sort((a, b) => a.t - b.t);
+  return h;
+}
+function setPatternLen(P, len) {
+  len = clamp(Math.round(len), 1, 1024);
+  P.len = len;
+  P.notes = P.notes.filter(n => n.t < len); P.notes.forEach(n => { if (n.t + n.l > len) n.l = len - n.t; });
+  P.hits = P.hits.filter(h => h.t < len);
+  P.fx = P.fx.filter(f => f.t < len);
+}
+
+/* instrument -> list of fx events at tick 0 */
+function instEvents(I) {
+  const ev = [{ k: 'vol', a: [I.vol | 0] }];
+  const s = I.slide || { k: 'none' };
+  if (s.k === 'vol') ev.push({ k: 'slvol', a: [s.s] });
+  else if (s.k === 'volAdv') ev.push({ k: 'slvola', a: [s.s, s.t | 0] });
+  else if (s.k === 'frq') ev.push({ k: 'slfrq', a: [s.s] });
+  else if (s.k === 'frqAdv') ev.push({ k: 'slfrqa', a: [s.s, s.t | 0] });
+  else ev.push({ k: 'slvoloff', a: [] });
+  const g = I.gate || { k: 'none' };
+  if (g.k === 'arp') { const c = chordById(g.chord) || CHORDS[1]; ev.push({ k: 'arp', a: [g.a !== undefined ? g.a : c.a, arpY(g.ticks || 1, g.retrig !== false, c.two)] }); }
+  else if (g.k === 'cut') ev.push({ k: 'cut', a: [g.n | 0] });
+  else ev.push({ k: 'arpoff', a: [] });
+  const m = I.mod || { k: 'none' };
+  if (m.k === 'vib') ev.push({ k: 'vib', a: [m.d | 0, m.r | 0] });
+  else if (m.k === 'trem') ev.push({ k: 'trem', a: [m.d | 0, m.r | 0] });
+  else ev.push({ k: 'viboff', a: [] });
+  const l = I.glis || { k: 'none' };
+  if (l.k === 'up') ev.push({ k: 'glis', a: [(Math.max(2, l.t | 0) - 1) & 127] });
+  else if (l.k === 'down') ev.push({ k: 'glis', a: [0x80 | ((Math.max(2, l.t | 0) - 1) & 127)] });
+  else ev.push({ k: 'glisoff', a: [] });
+  return ev;
+}
+
+/* =====================================================================
+   Effect state, the optimiser's view of a channel
+   ===================================================================== */
+const PARAMS = ['vol', 'slide', 'gate', 'mod', 'glis', 'nse', 'tra'];
+const INIT_STATE = { vol: 0, slide: 'none', gate: 'none', mod: 'none', glis: 'none', nse: 'none', tra: 0 };
+const TOP_STATE = {};
+function meetVal(a, b) { if (a === undefined) return b; if (b === undefined) return a; return a === b ? a : null; }
+function meetState(a, b) { const r = {}; PARAMS.forEach(p => { r[p] = meetVal(a[p], b[p]); }); return r; }
+function stateKey(s) { return PARAMS.map(p => String(s[p])).join('|'); }
+
+/* fx event -> [param, value] or null */
+function evState(e) {
+  const a = e.a || [];
+  switch (e.k) {
+    case 'vol': return ['vol', a[0]];
+    case 'slvol': return ['slide', 'vol:' + a[0]];
+    case 'slvola': return ['slide', 'volAdv:' + a[0] + ':' + a[1]];
+    case 'slfrq': return ['slide', 'frq:' + a[0]];
+    case 'slfrqa': return ['slide', 'frqAdv:' + a[0] + ':' + a[1]];
+    case 'slvoloff': case 'slfrqoff': return ['slide', 'none'];
+    case 'arp': return ['gate', 'arp:' + a[0] + ':' + a[1]];
+    case 'cut': return ['gate', 'cut:' + a[0]];
+    case 'arpoff': case 'cutoff': return ['gate', 'none'];
+    case 'trem': return ['mod', 'trem:' + a[0] + ':' + a[1]];
+    case 'vib': return ['mod', 'vib:' + a[0] + ':' + a[1]];
+    case 'tremoff': case 'viboff': return ['mod', 'none'];
+    case 'glis': return ['glis', 'g:' + a[0]];
+    case 'glisoff': return ['glis', 'none'];
+    case 'nse': return ['nse', 'n:' + a[0]];
+    case 'nseoff': return ['nse', 'none'];
+    default: return null;
+  }
+}
+const isStr = x => typeof x === 'string';
+/* commands that bring a parameter from `prev` (maybe unknown = null) to `val` */
+function cmdsFor(p, val, prev, ctx) {
+  const out = [];
+  const parts = val === 'none' ? ['none'] : String(val).split(':');
+  const num = i => +parts[i];
+  if (p === 'slide') {
+    if (val === 'none') out.push(isStr(prev) && prev.indexOf('vol') === 0 ? mkCmd('slvoloff', [], ctx) : mkCmd('slvol', [0], ctx));
+    else if (parts[0] === 'vol') out.push(mkCmd('slvol', [num(1)], ctx));
+    else if (parts[0] === 'volAdv') out.push(mkCmd('slvola', [num(1), num(2)], ctx));
+    else if (parts[0] === 'frq') out.push(mkCmd('slfrq', [num(1)], ctx));
+    else if (parts[0] === 'frqAdv') out.push(mkCmd('slfrqa', [num(1), num(2)], ctx));
+  } else if (p === 'gate') {
+    if (val === 'none') out.push(mkCmd('arpoff', [], ctx));
+    else if (parts[0] === 'arp') out.push(mkCmd('arp', [num(1), num(2)], ctx));
+    else if (parts[0] === 'cut') out.push(mkCmd('cut', [num(1)], ctx));
+  } else if (p === 'mod') {
+    if (val === 'none') out.push(mkCmd(isStr(prev) && prev.indexOf('trem') === 0 ? 'tremoff' : 'viboff', [], ctx));
+    else if (parts[0] === 'trem') out.push(mkCmd('trem', [num(1), num(2)], ctx));
+    else if (parts[0] === 'vib') out.push(mkCmd('vib', [num(1), num(2)], ctx));
+  } else if (p === 'glis') {
+    out.push(val === 'none' ? mkCmd('glisoff', [], ctx) : mkCmd('glis', [num(1)], ctx));
+  } else if (p === 'nse') {
+    out.push(val === 'none' ? mkCmd('nseoff', [], ctx) : mkCmd('nse', [num(1)], ctx));
+  }
+  return out;
+}
+
+/* =====================================================================
+   Pattern -> ops
+   ops: D(n) delay, S(p,val) state, V(val) volume before a note,
+        VT(val) volume that always counts, N(n) note, R(rv) rest, X(key,a) other
+   ===================================================================== */
+function patternHasContent(P) { return P.kind === 'drum' ? P.hits.length > 0 : P.notes.length > 0; }
+
+function toneOps(P, I) {
+  const ops = []; const len = P.len;
+  const ev = [];
+  const notes = P.notes.slice().sort((a, b) => a.t - b.t);
+  const noteAt = {}; notes.forEach(n => { noteAt[n.t] = true; });
+  if (I) instEvents(I).forEach(e => ev.push({ t: 0, ord: 1, src: 'i', e: e }));
+  (P.fx || []).forEach(e => { if (e.t < len) ev.push({ t: e.t, ord: 1, src: 'u', e: e }); });
+  const cut = P.cut !== undefined && P.cut !== null ? !!P.cut : (I ? !!I.cut : false);
+  notes.forEach((n, i) => {
+    const next = notes[i + 1]; const end = n.t + n.l; const ns = next ? next.t : len;
+    ev.push({ t: n.t, ord: 3, note: n });
+    if (cut && end < ns) ev.push({ t: end, ord: 0, off: true });
+  });
+  ev.sort((a, b) => a.t - b.t || a.ord - b.ord);
+  let cursor = 0, curVol = null;
+  const local = { mod: null, glis: null };
+  for (const x of ev) {
+    if (x.t > cursor) { ops.push({ k: 'D', n: x.t - cursor }); cursor = x.t; }
+    if (x.off) {
+      const rv = (isStr(local.mod) && local.mod.indexOf('vib') === 0) || (isStr(local.glis) && local.glis !== 'none');
+      ops.push({ k: 'R', rv: rv });
+    } else if (x.note) {
+      if (curVol !== null) ops.push({ k: 'V', val: curVol });
+      ops.push({ k: 'N', n: x.note.n });
+    } else {
+      const st = evState(x.e);
+      if (st) {
+        if (st[0] === 'vol') { curVol = st[1]; if (x.src === 'u' && !noteAt[x.t]) ops.push({ k: 'VT', val: st[1] }); }
+        else { ops.push({ k: 'S', p: st[0], val: st[1] }); if (st[0] === 'mod') local.mod = st[1]; if (st[0] === 'glis') local.glis = st[1]; }
+      } else if (OPS[x.e.k]) ops.push({ k: 'X', key: x.e.k, a: x.e.a || [] });
+    }
+  }
+  if (cursor < len) ops.push({ k: 'D', n: len - cursor });
+  return ops;
+}
+function drumOps(P, kit) {
+  const ops = []; const len = P.len; let cursor = 0;
+  const hits = P.hits.slice().sort((a, b) => a.t - b.t);
+  let last = -1;
+  for (const h of hits) {
+    if (h.t >= len || h.t === last) continue;
+    const V = kit[h.d]; if (!V) continue;
+    last = h.t;
+    if (h.t > cursor) { ops.push({ k: 'D', n: h.t - cursor }); cursor = h.t; }
+    ops.push({ k: 'VT', val: h.v !== undefined ? h.v : V.vol });
+    ops.push({ k: 'S', p: 'slide', val: 'vol:' + V.sl });
+  }
+  if (cursor < len) ops.push({ k: 'D', n: len - cursor });
+  return ops;
+}
+function opsOfPattern(song, P) { return P.kind === 'drum' ? drumOps(P, song.kit) : toneOps(P, P.inst ? song.instruments[P.inst] || null : null); }
+
+/* what a pattern leaves behind, whatever came in */
+function effectOf(ops) {
+  const eff = {};
+  ops.forEach(op => {
+    if (op.k === 'S') eff[op.p] = op.val;
+    else if (op.k === 'V' || op.k === 'VT') eff.vol = op.val;
+    else if (op.k === 'R' && op.rv) eff.vol = 0;
+  });
+  return eff;
+}
+
+/* collects commands and merges delays */
+function Builder() { this.items = []; this.pend = 0; }
+Builder.prototype.delay = function (n) { this.pend += n; };
+Builder.prototype.flush = function () {
+  if (this.pend > 0) { delayCmds(this.pend).forEach(c => this.items.push(c)); this.pend = 0; }
+};
+Builder.prototype.cmd = function (c) { this.flush(); this.items.push(c); };
+Builder.prototype.size = function () { this.flush(); let n = 0; this.items.forEach(c => { n += c.b.length; }); return n; };
+
+function emitOps(ops, tr0, ctx, B) {
+  const tr = {}; PARAMS.forEach(p => { tr[p] = tr0 && tr0[p] !== undefined ? tr0[p] : null; });
+  for (const op of ops) {
+    switch (op.k) {
+      case 'D': B.delay(op.n); break;
+      case 'S':
+        if (tr[op.p] !== op.val) cmdsFor(op.p, op.val, tr[op.p], ctx).forEach(c => B.cmd(c));
+        tr[op.p] = op.val; break;
+      case 'V': {
+        const reapply = tr.slide === 'none' || (isStr(tr.slide) && tr.slide.indexOf('vol:') === 0);
+        if (!(reapply && tr.vol === op.val)) B.cmd(mkCmd('vol', [op.val], ctx));
+        tr.vol = op.val; break;
+      }
+      case 'VT': B.cmd(mkCmd('vol', [op.val], ctx)); tr.vol = op.val; break;
+      case 'N': B.cmd({ b: [op.n], t: noteMacro(op.n) }); break;
+      case 'R':
+        if (op.rv) { B.cmd(mkCmd('vol', [0], ctx)); tr.vol = 0; } else B.cmd(CMD_SILENCE);
+        break;
+      case 'X': B.cmd(mkCmd(op.key, op.a, ctx)); break;
+    }
+  }
+  return tr;
+}
+
+/* =====================================================================
+   Export
+   ===================================================================== */
+function cIdent(s) { s = String(s || 'newSong').replace(/[^A-Za-z0-9_]/g, '_'); if (!/^[A-Za-z_]/.test(s)) s = '_' + s; return s; }
+
+function buildExport(song, o) {
+  o = o || {};
+  const res = { ok: false, errors: [], warnings: [], notes: [], bytes: null, tracks: [], size: 0, ticks: 0, tempo: song.tempo };
+  const ctx = { gv: song.gameVol ? (song.gamePct || 60) : 0 };
+  const pat = song.patterns;
+  const opsOf = {}, effOf = {};
+  Object.keys(pat).forEach(pid => { opsOf[pid] = opsOfPattern(song, pat[pid]); effOf[pid] = effectOf(opsOf[pid]); });
+
+  const lanes = [0, 1, 2, 3].map(c => (song.lanes[c] || []).filter(pl => pat[pl.pid]).map(pl => ({ pid: pl.pid, tra: pl.tra | 0, uid: pl.uid })));
+  const used = lanes.map((l, c) => l.some(pl => patternHasContent(pat[pl.pid])));
+  const laneLen = lanes.map(l => l.reduce((n, pl) => n + pat[pl.pid].len, 0));
+  let L = 0; for (let c = 0; c < 4; c++) if (used[c]) L = Math.max(L, laneLen[c]);
+  res.ticks = L;
+  if (!used.some(Boolean)) { res.errors.push('Nothing to export yet: place a pattern with notes or drum hits on a lane.'); return res; }
+
+  /* validation, per placement */
+  for (let c = 0; c < 4; c++) {
+    if (!used[c]) continue;
+    lanes[c].forEach(pl => {
+      const P = pat[pl.pid];
+      if (c === 3 && P.kind !== 'drum') res.errors.push('Lane CH3 plays drums: pattern "' + P.name + '" is a tone pattern.');
+      if (c < 3 && P.kind === 'drum') res.errors.push('Drum pattern "' + P.name + '" is on ' + CHANNELS[c].name + ': drums belong on CH3 (noise).');
+      if (P.kind === 'tone') {
+        const I = P.inst ? song.instruments[P.inst] : null;
+        const hasArp = (I && I.gate && I.gate.k === 'arp') || P.fx.some(e => e.k === 'arp');
+        const hasCut = (I && I.gate && I.gate.k === 'cut') || P.fx.some(e => e.k === 'cut');
+        P.notes.forEach(n => {
+          const v = n.n + pl.tra;
+          if (v < NOTE_MIN || v > NOTE_MAX) res.errors.push('"' + P.name + '" on ' + CHANNELS[c].name + ': note ' + noteName(n.n) + ' with transposition ' + pl.tra + ' leaves the range C2..D7.');
+        });
+        if (pl.tra && hasArp) res.warnings.push('"' + P.name + '" uses an arpeggio with transposition ' + pl.tra + ' on ' + CHANNELS[c].name + ': the library adds the transposition twice, the chord is detuned (README 4.6).');
+        if (pl.tra && hasCut) res.warnings.push('"' + P.name + '" uses a note gate (CUT) with transposition ' + pl.tra + ': only works at transposition 0 (README 4.9).');
+        if (I && I.slide && (I.slide.k === 'vol' || I.slide.k === 'volAdv') && I.slide.s > 0) res.warnings.push('Instrument "' + I.name + '" has a rising volume slide: volume is not clamped at 63, a long note wraps around.');
+      }
+    });
+  }
+  const dedupe = a => a.filter((x, i) => a.indexOf(x) === i);
+  res.errors = dedupe(res.errors); res.warnings = dedupe(res.warnings);
+  if (res.errors.length) return res;
+
+  /* runs */
+  const runs = lanes.map(l => {
+    const r = [];
+    l.forEach(pl => {
+      const last = r[r.length - 1];
+      if (last && last.pid === pl.pid && last.tra === pl.tra) last.count++;
+      else r.push({ pid: pl.pid, tra: pl.tra, count: 1 });
+    });
+    return r;
+  });
+
+  /* track or inline? */
+  const unknownState = {}; PARAMS.forEach(p => { unknownState[p] = null; });
+  const est = {}, usage = {};
+  function estimate(pid) {
+    if (est[pid] === undefined) { const B = new Builder(); emitOps(opsOf[pid], unknownState, ctx, B); est[pid] = B.size(); }
+    return est[pid];
+  }
+  for (let c = 0; c < 4; c++) if (used[c]) runs[c].forEach(r => { (usage[r.pid] = usage[r.pid] || []).push(r.count); });
+  const mode = {}; const trackPids = [];
+  Object.keys(usage).forEach(pid => {
+    const e = estimate(pid);
+    const onlyDelay = opsOf[pid].every(op => op.k === 'D');
+    let inlineCost = 0, trackCost = 3 + e;
+    usage[pid].forEach(cn => { inlineCost += cn * e; trackCost += cn > 1 ? 3 : 2; });
+    mode[pid] = (!onlyDelay && !o.noTracks && trackCost < inlineCost) || o.allTracks && !onlyDelay ? 'track' : 'inline';
+    if (mode[pid] === 'track') trackPids.push(pid);
+  });
+
+  /* sites */
+  const sites = lanes.map((l, c) => {
+    const out = [];
+    if (!used[c]) return out;
+    runs[c].forEach(r => {
+      if (mode[r.pid] === 'track') out.push({ pid: r.pid, tra: r.tra, count: r.count, mode: 'call' });
+      else for (let i = 0; i < r.count; i++) out.push({ pid: r.pid, tra: r.tra, count: 1, mode: 'inline' });
+    });
+    return out;
+  });
+
+  /* dataflow: which state is known where */
+  const bodyIn = {};
+  trackPids.forEach(pid => { bodyIn[pid] = Object.assign({}, TOP_STATE); });
+  const loop = !!song.loop;
+  let changed = true, iter = 0;
+  while (changed && iter++ < 60) {
+    changed = false;
+    for (let c = 0; c < 4; c++) {
+      if (!used[c]) continue;
+      const S = sites[c];
+      for (let i = 0; i < S.length; i++) {
+        const s = S[i]; let inc;
+        if (i > 0) inc = S[i - 1].end || TOP_STATE;
+        else inc = loop ? meetState(INIT_STATE, S[S.length - 1].end || TOP_STATE) : INIT_STATE;
+        const eff = effOf[s.pid];
+        const bin = Object.assign({}, inc); bin.tra = s.tra;
+        if (s.mode === 'call' && s.count > 1) PARAMS.forEach(p => { if (p !== 'tra' && eff[p] !== undefined) bin[p] = meetVal(inc[p], eff[p]); });
+        const end = {}; PARAMS.forEach(p => { end[p] = p === 'tra' ? s.tra : (eff[p] !== undefined ? eff[p] : bin[p]); });
+        if (!s.end || stateKey(s.end) !== stateKey(end) || stateKey(s.inc || {}) !== stateKey(inc)) changed = true;
+        s.inc = inc; s.bin = bin; s.end = end;
+      }
+    }
+    trackPids.forEach(pid => {
+      let b = Object.assign({}, TOP_STATE);
+      for (let c = 0; c < 4; c++) if (used[c]) sites[c].forEach(s => { if (s.pid === pid && s.mode === 'call') b = meetState(b, s.bin); });
+      if (stateKey(b) !== stateKey(bodyIn[pid])) changed = true;
+      bodyIn[pid] = b;
+    });
+  }
+
+  /* track numbering: entries, stop track, pattern tracks */
+  const tracks = [];
+  const entryIdx = [-1, -1, -1, -1];
+  for (let c = 0; c < 4; c++) if (used[c]) { entryIdx[c] = tracks.length; tracks.push({ kind: 'entry', ch: c, name: CHANNELS[c].name + ' ' + CHANNELS[c].wave }); }
+  let stopIdx = -1;
+  if (used.some(u => !u)) { stopIdx = tracks.length; tracks.push({ kind: 'stop', name: 'silent channel' }); for (let c = 0; c < 4; c++) if (!used[c]) entryIdx[c] = stopIdx; }
+  const trackOf = {};
+  trackPids.forEach(pid => { trackOf[pid] = tracks.length; tracks.push({ kind: 'pat', pid: pid, name: pat[pid].name }); });
+  if (tracks.length > 255) res.errors.push('Too many tracks (' + tracks.length + ', max 255).');
+
+  /* tempo goes to the first used channel, CH3 first */
+  let tempoCh = -1;
+  if (song.includeTempo) { if (used[3]) tempoCh = 3; else for (let c = 0; c < 4; c++) if (used[c]) { tempoCh = c; break; } }
+
+  /* emit */
+  tracks.forEach((T, ti) => {
+    const B = new Builder();
+    if (T.kind === 'stop') { B.cmd(CMD_STOP); }
+    else if (T.kind === 'pat') {
+      emitOps(opsOf[T.pid], bodyIn[T.pid], ctx, B);
+      B.cmd(CMD_RETURN);
+    } else {
+      const c = T.ch;
+      if (c === tempoCh) B.cmd(mkCmd('settmp', [song.tempo], ctx));
+      sites[c].forEach(s => {
+        if (s.inc.tra !== s.tra) B.cmd(s.tra === 0 ? mkCmd('traoff', [], ctx) : mkCmd('settra', [s.tra], ctx));
+        if (s.mode === 'inline') emitOps(opsOf[s.pid], s.bin, ctx, B);
+        else {
+          const cm = pat[s.pid].name;
+          B.cmd(s.count > 1 ? cmdRepeat(s.count - 1, trackOf[s.pid], cm + ' x' + s.count) : cmdGoto(trackOf[s.pid], cm));
+        }
+      });
+      if (loop) { if (laneLen[c] < L) B.delay(L - laneLen[c]); B.cmd(cmdGoto(ti, 'loop: this very track')); }
+      else B.cmd(CMD_STOP);
+    }
+    B.flush();
+    T.items = B.items;
+    T.bytes = []; B.items.forEach(x => x.b.forEach(v => T.bytes.push(v)));
+  });
+
+  /* layout */
+  const n = tracks.length;
+  const offs = []; let acc = 0; tracks.forEach(T => { offs.push(acc); acc += T.bytes.length; });
+  const bytes = [n];
+  offs.forEach(of => { bytes.push(of & 255, (of >> 8) & 255); });
+  for (let c = 0; c < 4; c++) bytes.push(entryIdx[c]);
+  tracks.forEach(T => T.bytes.forEach(v => bytes.push(v)));
+  res.bytes = Uint8Array.from(bytes);
+  res.size = bytes.length;
+  res.tracks = tracks; res.entryIdx = entryIdx; res.offs = offs; res.used = used; res.laneLen = laneLen; res.L = L;
+  res.loop = loop; res.tempoCh = tempoCh; res.tempo = song.tempo; res.ctx = ctx;
+  res.headerBytes = 1 + 2 * n + 4;
+  if (loop) {
+    for (let c = 0; c < 4; c++) if (used[c] && laneLen[c] < L) res.notes.push(CHANNELS[c].name + ' is ' + (L - laneLen[c]) + ' ticks shorter than the longest lane: it is padded with silence so the loop stays aligned.');
+  }
+  res.ok = res.errors.length === 0;
+  return res;
+}
+
+/* ---------- text output ---------- */
+function formatBytesHex(bytes) { return Array.prototype.map.call(bytes, b => '0x' + ('0' + b.toString(16).toUpperCase()).slice(-2)); }
+function exportText(song, res, o) {
+  o = o || {};
+  const name = cIdent(song.name);
+  const lines = [];
+  const W = s => lines.push(s);
+  const secs = res.L / (song.tempo || 25);
+  W('#ifndef ' + name.toUpperCase() + '_H');
+  W('#define ' + name.toUpperCase() + '_H');
+  W('');
+  W('// ---------------------------------------------------------------------------');
+  W('//  "' + (song.title || song.name) + '" (made with the ATMlib Track Editor)');
+  W('//  Play with:  #include "song.h"     ATM.play(' + name + ');');
+  W('//  Tempo ' + song.tempo + ' (1 beat = 16 ticks, ' + (song.tempo * 3.75).toFixed(1) + ' BPM), ' + (res.loop ? 'loop of ' + res.L + ' ticks (' + secs.toFixed(1) + ' s)' : 'one-shot, ' + res.L + ' ticks (' + secs.toFixed(1) + ' s)') + '.');
+  W('//  ' + res.size + ' bytes, ' + res.tracks.length + ' tracks.' + (song.includeTempo ? '' : ' No ATM_SET_TEMPO inside: set the tempo from the sketch with ATM.setTempo(' + song.tempo + ').'));
+  if (res.loop) W('//  Loop: every channel entry track ends with ATM_GOTO(itself), no STOP, no hop.');
+  W('// ---------------------------------------------------------------------------');
+  W('');
+  W('#include <ATMcmds.h>');
+  W('');
+  if (res.ctx.gv) {
+    W('#define MUSIC_VOL_PCT ' + res.ctx.gv + '                       // in-game music volume, 100 = original');
+    W('#define MV(v) ((v) * MUSIC_VOL_PCT / 100)');
+    W('#define MS(n) ((uint8_t)-((((n) * MUSIC_VOL_PCT + 50) / 100) < 1 ? 1 : (((n) * MUSIC_VOL_PCT + 50) / 100)))');
+    W('');
+  }
+  W('#ifndef Song');
+  W('#define Song const uint8_t PROGMEM');
+  W('#endif');
+  W('');
+  W('Song ' + name + '[] = {          // total song in bytes = ' + res.size);
+  const n = res.tracks.length;
+  const hx = v => '0x' + ('0' + v.toString(16).toUpperCase()).slice(-2);
+  W('  ' + hx(n) + ',                         // Number of tracks');
+  res.tracks.forEach((T, i) => {
+    const of = res.offs[i];
+    W('  ' + hx(of & 255) + ', ' + hx((of >> 8) & 255) + ',                   // Address of track ' + i + '   // ' + of);
+  });
+  for (let c = 0; c < 4; c++) W('  ' + hx(res.entryIdx[c]) + ',                         // Channel ' + c + ' entry track' + (res.used[c] ? '' : ' (silent)'));
+  W('');
+  res.tracks.forEach((T, i) => {
+    const label = T.kind === 'entry' ? T.name + ' (entry)' : T.kind === 'stop' ? 'unused channel stops at once' : T.name;
+    W('  //"Track ' + i + '" ' + label + '  [' + T.bytes.length + ' bytes]');
+    let cur = [];
+    const flushLine = () => { if (cur.length) { W('  ' + cur.join(' ')); cur = []; } };
+    T.items.forEach(c => {
+      cur.push(c.t + ',');
+      const isEnd = c.b[0] >= 0xA0 && c.b[0] <= 0xE0 || c.b[0] === 0xFC || c.b[0] === 0xFD || c.b[0] === 0xFE || c.b[0] === 0x9F;
+      if (c.cm) { cur[cur.length - 1] += ' // ' + c.cm; flushLine(); }
+      else if (isEnd) flushLine();
+    });
+    flushLine();
+    W('');
+  });
+  W('};');
+  W('');
+  W('#endif');
+  return lines.join('\n');
+}
+function exportHex(song, res) {
+  const name = cIdent(song.name);
+  const hx = formatBytesHex(res.bytes);
+  const lines = [];
+  for (let i = 0; i < hx.length; i += 12) lines.push('  ' + hx.slice(i, i + 12).join(', ') + ',');
+  return 'const uint8_t PROGMEM ' + name + '[] = {   // ' + res.size + ' bytes\n' + lines.join('\n') + '\n};\n';
+}
+
+/* =====================================================================
+   Interpreter: follows the byte stream like the playroutine (README 4.3)
+   and returns a flat stream with the control flow unrolled.
+   ===================================================================== */
+function parseSong(bytes) {
+  const n = bytes[0];
+  const base = 1 + 2 * n + 4;
+  const starts = [];
+  for (let i = 0; i < n; i++) starts.push(base + (bytes[1 + 2 * i] | (bytes[2 + 2 * i] << 8)));
+  const entries = [bytes[1 + 2 * n], bytes[2 + 2 * n], bytes[3 + 2 * n], bytes[4 + 2 * n]];
+  return { n: n, base: base, starts: starts, entries: entries };
+}
+function flatten(bytes, ch, maxTicks, opts) {
+  opts = opts || {};
+  const S = parseSong(bytes);
+  const out = [];
+  let cur = 0, pc = S.starts[S.entries[ch]];
+  const stack = []; let ticks = 0, steps = 0, maxDepth = 0, tempo = null, loopTicks = null, stopped = false;
+  const guard = 3000000;
+  if (S.entries[ch] === undefined || pc === undefined) return { bytes: Uint8Array.from([0x9F]), ticks: 0, tempo: null, loopTicks: null, maxDepth: 0 };
+  while (steps++ < guard) {
+    const op = bytes[pc++];
+    if (op === undefined) break;
+    if (op === 0 || (op >= 1 && op <= 63)) { out.push(op); continue; }
+    if (op >= 0xA0 && op <= 0xDF) {
+      ticks += op - 0x9F; out.push(op);
+      if (ticks >= maxTicks) break;
+      continue;
+    }
+    if (op === 0xE0) {
+      let v = bytes[pc++]; let ex = [v];
+      if (v & 0x80) { const w = bytes[pc++]; ex.push(w); v = ((v & 0x7F) << 7) | w; }
+      ticks += v + 65; out.push(0xE0); ex.forEach(x => out.push(x));
+      if (ticks >= maxTicks) break;
+      continue;
+    }
+    if (op === 0xFC) {
+      const t = bytes[pc++];
+      if (t === S.entries[ch] && loopTicks === null) loopTicks = ticks;
+      if (t === cur) { pc = S.starts[t]; }
+      else { stack.push({ cnt: 0, track: cur, pos: pc }); cur = t; pc = S.starts[t]; maxDepth = Math.max(maxDepth, stack.length); }
+      continue;
+    }
+    if (op === 0xFD) {
+      const n = bytes[pc++], t = bytes[pc++];
+      stack.push({ cnt: n, track: cur, pos: pc }); cur = t; pc = S.starts[t]; maxDepth = Math.max(maxDepth, stack.length);
+      continue;
+    }
+    if (op === 0xFE) {
+      if (!stack.length) { pc = S.starts[cur]; }
+      else {
+        const f = stack[stack.length - 1];
+        if (f.cnt > 0) { f.cnt--; pc = S.starts[cur]; }
+        else { stack.pop(); cur = f.track; pc = f.pos; }
+      }
+      continue;
+    }
+    if (op === 0x9F) { stopped = true; break; }
+    if (op === 0x9D) { const v = bytes[pc++]; if (tempo === null) tempo = v; continue; }
+    if (op === 0x9C) { pc++; continue; }
+    if (op === 0x9E) { pc += 4; continue; }
+    if (op === 0x57) { pc++; continue; }
+    if (op >= 0x40 && op <= 0x9F) {
+      const n = paramCount(op); out.push(op);
+      for (let i = 0; i < n; i++) out.push(bytes[pc++]);
+      continue;
+    }
+    /* reserved: ignore */
+  }
+  out.push(0x9F);
+  return { bytes: Uint8Array.from(out), ticks: ticks, tempo: tempo, loopTicks: loopTicks, maxDepth: maxDepth, stopped: stopped };
+}
+
+/* =====================================================================
+   Rendering with the real playroutine (WASM)
+   ===================================================================== */
+let ENGINE = null;
+function setEngine(factory) { ENGINE = factory; }
+const SR = 31250;
+/* The playroutine only accepts 1024 bytes per channel at once, so long flat
+   streams are cut at note-ons and each piece is started at the right tick with
+   the channel state (volume, slides, transposition...) replayed first. */
+function chunkStream(b, limit, every, drum) {
+  limit = limit || 800; let nextB = every || 0;
+  const chunks = [];
+  const st = new Map();          /* opcode -> last full command (kept in order of last use) */
+  let cur = [], tick = 0, start = 0, i = 0;
+  const prefix = () => { const a = []; st.forEach(v => { for (let k = 0; k < v.length; k++) a.push(v[k]); }); return a; };
+  let lastWasDelay = false;
+  while (i < b.length) {
+    const op = b[i];
+    if (op === 0x9F) break;
+    /* a group = everything up to the next delay */
+    let j = i, hasNote = false;
+    const group = [];
+    while (j < b.length) {
+      const o = b[j];
+      if (o === 0x9F || (o >= 0xA0 && o <= 0xE0)) break;
+      if (o >= 1 && o <= 63) { hasNote = true; group.push([o]); j++; continue; }
+      if (o === 0) { group.push([0]); j++; continue; }
+      if (drum && o === 0x40) hasNote = true;   /* on the noise channel a volume command is the hit */
+      const n = paramCount(o); group.push(Array.prototype.slice.call(b, j, j + 1 + n)); j += 1 + n;
+    }
+    /* the delay that follows */
+    let dl = [], dt = 0;
+    if (j < b.length && b[j] >= 0xA0 && b[j] <= 0xDF) { dl = [b[j]]; dt = b[j] - 0x9F; j++; }
+    else if (j < b.length && b[j] === 0xE0) {
+      let v = b[j + 1]; dl = [b[j], b[j + 1]];
+      if (v & 0x80) { v = ((v & 0x7F) << 7) | b[j + 2]; dl.push(b[j + 2]); }
+      dt = v + 65; j += dl.length;
+    }
+    const gbytes = group.reduce((x, g) => x + g.length, 0);
+    if (lastWasDelay && hasNote && cur.length > 0 && (every ? tick >= nextB : cur.length + gbytes + dl.length > limit)) {
+      if (every) nextB = tick + every;
+      chunks.push({ tick: start, bytes: Uint8Array.from(cur.concat([0x9F])) });
+      cur = prefix(); start = tick;
+    }
+    group.forEach(g => {
+      if (g.length > 1 || (g[0] > 63)) { st.delete(g[0]); st.set(g[0], g); }
+      g.forEach(x => cur.push(x));
+    });
+    dl.forEach(x => cur.push(x));
+    tick += dt; lastWasDelay = dl.length > 0;
+    i = j;
+    if (!dl.length && group.length === 0) break;
+  }
+  cur.push(0x9F);
+  chunks.push({ tick: start, bytes: Uint8Array.from(cur) });
+  return chunks;
+}
+/* The WASM playroutine only lets one channel through at a time (the highest
+   active one wins), so every channel is rendered in its own engine instance
+   and the results are summed here. */
+async function renderChannel(bytes, ticks, cia, tail, opts) {
+  const M = await ENGINE();
+  const sfx = M.cwrap('atm_sfx', null, ['number', 'number', 'number']);
+  const render = M.cwrap('atm_render', 'number', ['number', 'number']);
+  const CH = 4096;
+  const p = M._malloc(CH * 4);
+  const events = chunkStream(bytes, opts.chunkLimit, opts.chunkTicks, ChSel === 3);
+  const total = ticks * cia + tail;
+  const out = new Float32Array(total);
+  let o = 0, k = 0, first = true;
+  function renderTo(end) {
+    end = Math.min(end, total);
+    while (o < end) {
+      const n = Math.min(CH, end - o);
+      render(p, n);
+      out.set(M.HEAPF32.subarray(p / 4, p / 4 + n), o); o += n;
+    }
+  }
+  while (k < events.length) {
+    const t = events[k].tick;
+    if (!first) renderTo(t * cia);
+    const q = M._malloc(events[k].bytes.length + 8); M.HEAPU8.set(events[k].bytes, q); sfx(q, events[k].bytes.length, ChSel);
+    k++;
+    if (first) {
+      const dv = new DataView(M.HEAPU8.buffer);
+      dv.setUint16(M._cia, cia, true); dv.setUint16(M._cia_count, 1, true);
+      first = false;
+    }
+  }
+  renderTo(total);
+  return out;
+}
+let ChSel = 0;
+async function renderStreams(streams, ticks, tempo, opts) {
+  opts = opts || {};
+  const cia = Math.max(2, Math.round(SR / Math.max(1, tempo)));
+  const tail = Math.round((opts.tail !== undefined ? opts.tail : 0.4) * SR);
+  const total = ticks * cia + tail;
+  const out = new Float32Array(total);
+  for (let c = 0; c < 4; c++) {
+    const b = streams[c];
+    if (!b || b.length < 2) continue;
+    ChSel = c;
+    const part = await renderChannel(b, ticks, cia, tail, opts);
+    for (let i = 0; i < total; i++) out[i] += part[i];
+  }
+  /* remove DC and scale down so four loud channels do not clip */
+  let y = 0, xp = 0; const g = 0.4;
+  for (let i = 0; i < total; i++) { const x = out[i]; y = x - xp + 0.995 * y; xp = x; out[i] = y * g; }
+  return { pcm: out, cia: cia, ticks: ticks };
+}
+/* export bytes -> audio */
+async function renderExport(res, o) {
+  o = o || {};
+  const tempo = res.tempo;
+  const passes = o.passes || (res.loop ? Math.max(2, Math.ceil((o.minSeconds || 40) * tempo / Math.max(1, res.L))) : 1);
+  const maxPasses = o.maxPasses || 400;
+  const target = res.loop ? Math.min(passes, maxPasses) * res.L : res.L + 4 * tempo;
+  const streams = [];
+  let realTicks = 0, outTempo = tempo;
+  for (let c = 0; c < 4; c++) {
+    if (o.mute && o.mute[c]) { streams.push(null); continue; }
+    const f = flatten(res.bytes, c, target);
+    streams.push(f.bytes);
+    realTicks = Math.max(realTicks, f.ticks);
+    if (f.tempo) outTempo = f.tempo;
+  }
+  const ticks = res.loop ? target : Math.max(realTicks, 1);
+  const r = await renderStreams(streams, ticks, outTempo, { tail: res.loop ? 0 : 0.6 });
+  r.L = res.L; r.loop = res.loop; r.passes = res.loop ? target / res.L : 1; r.tempo = outTempo;
+  return r;
+}
+
+/* =====================================================================
+   Import of a song.h written with ATM commands (best effort)
+   ===================================================================== */
+function cleanHeader(text) { return text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '').replace(/#[^\n]*/g, ''); }
+function findArrays(t) {
+  const out = []; const re = /([A-Za-z_]\w*)\s*\[\s*\w*\s*\]\s*(?:PROGMEM\s*)?=\s*\{/g; let m;
+  while ((m = re.exec(t))) out.push({ name: m[1], open: m.index + m[0].length - 1 });
+  return out;
+}
+/* every array in the file that looks like an ATMlib song */
+function listHeaderSongs(text) {
+  const arrs = findArrays(cleanHeader(text)); const res = [];
+  arrs.forEach((a, i) => {
+    try {
+      const b = parseHeaderBytes(text, i); const n = b[0];
+      if (!(n >= 1 && n <= 60) || b.length < 1 + 2 * n + 4 + 1) return;
+      const base = 1 + 2 * n + 4; let ok = true;
+      for (let k = 0; k < n; k++) { const o = b[1 + 2 * k] | (b[2 + 2 * k] << 8); if (base + o >= b.length) ok = false; }
+      for (let k = 0; k < 4; k++) if (b[1 + 2 * n + k] >= n) ok = false;
+      if (ok) res.push({ index: i, name: a.name, bytes: b, tracks: n, size: b.length });
+    } catch (e) {}
+  });
+  return res;
+}
+function parseHeaderBytes(text, which) {
+  let t = text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const defs = {};
+  t.replace(/#define\s+([A-Za-z_]\w*)\s+([^\n]+)/g, (m, k, v) => { defs[k] = v.trim(); return ''; });
+  t = t.replace(/#[^\n]*/g, '');
+  const arrs = findArrays(t); let open = arrs.length ? (arrs[which || 0] || arrs[0]).open : t.indexOf('{');
+  if (open < 0) throw new Error('No array found in the file.');
+  const close = t.indexOf('};', open);
+  const body = t.slice(open + 1, close < 0 ? t.length : close);
+  const names = {};
+  Object.keys(OPS).forEach(k => { names[OPS[k].mac] = k; });
+  const bytes = [];
+  /* tokenizer: identifiers with optional (args), numbers */
+  let i = 0;
+  function skipWs() { while (i < body.length && /[\s,]/.test(body[i])) i++; }
+  function readArgs() {
+    /* read balanced parentheses, return arg strings */
+    let depth = 0, cur = '', args = [];
+    for (; i < body.length; i++) {
+      const ch = body[i];
+      if (ch === '(') { depth++; if (depth === 1) continue; }
+      if (ch === ')') { depth--; if (depth === 0) { i++; args.push(cur); return args; } }
+      if (ch === ',' && depth === 1) { args.push(cur); cur = ''; continue; }
+      cur += ch;
+    }
+    return args;
+  }
+  function evalExpr(s) {
+    s = s.trim();
+    s = s.replace(/\(uint8_t\)/g, '').replace(/\(int8_t\)/g, '').replace(/\(byte\)/g, '');
+    s = s.replace(/MV\(([^()]*)\)/g, '($1)').replace(/MS\(([^()]*)\)/g, '(-($1))');
+    s = s.replace(/[A-Za-z_]\w*/g, m => (defs[m] !== undefined ? '(' + defs[m] + ')' : '0'));
+    if (!/^[0-9a-fA-Fx+\-*/%()\s.]*$/.test(s)) return 0;
+    try { return Math.round(Function('"use strict";return (' + s + ')')()) & 255; } catch (e) { return 0; }
+  }
+  while (true) {
+    skipWs(); if (i >= body.length) break;
+    const m = /^[A-Za-z_]\w*/.exec(body.slice(i));
+    if (m) {
+      const id = m[0]; i += id.length;
+      let args = [];
+      if (body[i] === '(') args = readArgs();
+      const mm = /^ATM_NOTE_([A-G])(\d)(_?)$/.exec(id);
+      if (mm) { const pcn = PC.indexOf(mm[1] + (mm[3] ? '#' : '')); bytes.push(1 + pcn + 12 * (parseInt(mm[2], 10) - 2)); continue; }
+      if (id === 'ATM_DELAY') { bytes.push(0x9F + evalExpr(args[0])); continue; }
+      if (id === 'ATM_LONG_DELAY') { const v = evalExpr(args[0]) - 65; bytes.push(0xE0, v & 255); continue; }
+      if (id === 'ATM_GOTO') { bytes.push(0xFC, evalExpr(args[0])); continue; }
+      if (id === 'ATM_REPEAT') { bytes.push(0xFD, evalExpr(args[0]), evalExpr(args[1])); continue; }
+      if (id === 'ATM_RETURN') { bytes.push(0xFE); continue; }
+      if (id === 'ATM_STOP_CHAN') { bytes.push(0x9F); continue; }
+      if (id === 'ATM_GOTO_ADV') { bytes.push(0x9E); args.forEach(a => bytes.push(evalExpr(a))); continue; }
+      if (names[id]) { bytes.push(OPS[names[id]].op); args.forEach(a => bytes.push(evalExpr(a))); continue; }
+      if (defs[id] !== undefined) { bytes.push(evalExpr(defs[id])); continue; }
+      continue;
+    }
+    const nm = /^(0[xX][0-9a-fA-F]+|\d+)/.exec(body.slice(i));
+    if (nm) { bytes.push(parseInt(nm[0], nm[0][1] === 'x' || nm[0][1] === 'X' ? 16 : 10) & 255); i += nm[0].length; continue; }
+    i++;
+  }
+  return Uint8Array.from(bytes);
+}
+
+/* flat stream -> events: notes (with lengths), fx events, ticks */
+function streamToEvents(flat) {
+  const notes = [], fx = []; let t = 0, cur = null, i = 0;
+  const b = flat;
+  function closeNote(at) { if (cur) { cur.l = Math.max(1, at - cur.t); notes.push(cur); cur = null; } }
+  const offsT = [];
+  while (i < b.length) {
+    const op = b[i++];
+    if (op === 0) { closeNote(t); offsT.push(t); continue; }
+    if (op >= 1 && op <= 63) { closeNote(t); cur = { t: t, n: op, l: 1 }; continue; }
+    if (op >= 0xA0 && op <= 0xDF) { t += op - 0x9F; continue; }
+    if (op === 0xE0) { let v = b[i++]; if (v & 0x80) v = ((v & 0x7F) << 7) | b[i++]; t += v + 65; continue; }
+    if (op === 0x9F) break;
+    if (op >= 0x40 && op < 0x9F && OP_BY_CODE[op]) {
+      const k = OP_BY_CODE[op]; const n = OPS[k].n; const a = [];
+      for (let j = 0; j < n; j++) { let v = b[i++]; if (OPS[k].sg && OPS[k].sg[j] && v > 127) v -= 256; a.push(v); }
+      fx.push({ t: t, k: k, a: a });
+      continue;
+    }
+    const n = paramCount(op); i += n;
+  }
+  closeNote(t);
+  return { notes: notes, fx: fx, ticks: t };
+}
+
+function importSongBytes(bytes, name) {
+  const song = newSong();
+  song.name = cIdent(name || 'imported');
+  const S = parseSong(bytes);
+  const notes = [];
+  let tempo = null, L = 0;
+  const flats = [];
+  for (let c = 0; c < 4; c++) {
+    const f = flatten(bytes, c, 20000);
+    if (f.tempo && tempo === null) tempo = f.tempo;
+    const ev = streamToEvents(f.bytes);
+    const lt = f.loopTicks !== null ? f.loopTicks : ev.ticks;
+    flats.push({ ev: ev, ticks: lt, f: f });
+    L = Math.max(L, lt);
+  }
+  song.tempo = tempo || 25; song.includeTempo = tempo !== null;
+  song.loop = flats.some(x => x.f.loopTicks !== null);
+  const idByKey = {};
+  for (let c = 0; c < 4; c++) {
+    const ev = flats[c].ev; const lt = flats[c].ticks;
+    if (!ev.notes.length && !(c === 3 && ev.fx.length)) continue;
+    /* cut points: multiples of barTicks where no note crosses */
+    const bar = 64; const cuts = [0];
+    for (let t = bar; t < lt; t += bar) {
+      const crossing = ev.notes.some(n => n.t < t && n.t + n.l > t);
+      if (!crossing) cuts.push(t);
+    }
+    cuts.push(lt);
+    for (let k = 0; k + 1 < cuts.length; k++) {
+      const a = cuts[k], z = cuts[k + 1];
+      const nn = ev.notes.filter(n => n.t >= a && n.t < z).map(n => ({ t: n.t - a, n: n.n, l: Math.min(n.l, z - n.t) }));
+      const ff = ev.fx.filter(f => f.t >= a && f.t < z);
+      let P;
+      if (c === 3) {
+        /* drums: group VOL/SL_VOL/DELAY into hits */
+        const hits = []; const fxo = [];
+        let curVol = null, curSl = null;
+        const byT = {};
+        ff.forEach(f => { (byT[f.t] = byT[f.t] || []).push(f); });
+        Object.keys(byT).map(Number).sort((x, y) => x - y).forEach(t => {
+          let v = null, s = null;
+          byT[t].forEach(f => { if (f.k === 'vol') v = f.a[0]; else if (f.k === 'slvol') s = f.a[0]; else fxo.push({ t: t - a, k: f.k, a: f.a }); });
+          if (s !== null) curSl = s;
+          if (v !== null) hits.push({ t: t - a, vol: v, sl: curSl === null ? 0 : curSl });
+        });
+        const key = JSON.stringify([hits, z - a]);
+        if (idByKey['d' + key]) P = song.patterns[idByKey['d' + key]];
+        else {
+          P = addPattern(song, 'drum', { name: 'Drums ' + (k + 1), len: z - a });
+          hits.forEach(h => {
+            const id = 'v' + h.vol + '_' + (-h.sl);
+            if (!song.kit[id]) song.kit[id] = { id: id, name: 'Voice ' + h.vol + '/' + (-h.sl), vol: h.vol, sl: h.sl || -1, color: '#6b5a3d', key: '' };
+            P.hits.push({ t: h.t, d: id });
+          });
+          idByKey['d' + key] = P.id;
+        }
+      } else {
+        const key = JSON.stringify([nn, ff.map(f => [f.t - a, f.k, f.a]), z - a]);
+        if (idByKey['t' + key]) P = song.patterns[idByKey['t' + key]];
+        else {
+          P = addPattern(song, 'tone', { name: CHANNELS[c].name + ' bar ' + (k + 1), len: z - a, notes: nn, fx: ff.map(f => ({ t: f.t - a, k: f.k, a: f.a })), cut: true });
+          idByKey['t' + key] = P.id;
+        }
+      }
+      addPlacement(song, c, P.id);
+    }
+    /* pad shorter lanes */
+  }
+  return { song: song, loopTicks: L };
+}
+
+/* =====================================================================
+   Project file helpers
+   ===================================================================== */
+function migrate(o) {
+  const s = newSong();
+  Object.keys(s).forEach(k => { if (o[k] !== undefined) s[k] = o[k]; });
+  s.kit = Object.assign(clone(KIT_DEFAULT), o.kit || {});
+  s.lanes = [0, 1, 2, 3].map(i => (o.lanes && o.lanes[i]) || []);
+  Object.keys(s.patterns).forEach(id => {
+    const P = s.patterns[id];
+    P.notes = P.notes || []; P.hits = P.hits || []; P.fx = P.fx || [];
+  });
+  s.lanes.forEach(l => l.forEach(pl => { if (!pl.uid) pl.uid = uid(s, 'u'); }));
+  return s;
+}
+
+root.ATMED = {
+  PC, delayCmds, CHORDS_ALL: null, noteName, noteMacro, isBlackKey, NOTE_MIN, NOTE_MAX, OPS, OP_BY_CODE, mkCmd, CHORDS, chordById, chordByA, arpY,
+  INSTRUMENT_PRESETS, KIT_DEFAULT, KIT_ORDER, DRUM_PRESETS, voiceLen, COLORS, CHANNELS, clone, clamp,
+  newSong, addPattern, addPlacement, patternUses, deletePattern, duplicatePattern, ensureInstrument, addDrumPreset,
+  laneTicks, songTicks, normalizeTone, putNote, putHit, setPatternLen, instEvents, evState,
+  patternHasContent, toneOps, drumOps, opsOfPattern, buildExport, exportText, exportHex, cIdent,
+  parseSong, flatten, chunkStream, setEngine, renderStreams, renderExport, SR,
+  parseHeaderBytes, listHeaderSongs, streamToEvents, importSongBytes, migrate, uid
+};
+if (typeof module !== 'undefined' && module.exports) module.exports = root.ATMED;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+</script><script>/* ATMlib sound-effect model: preset sliders -> generic settings -> command list */
+(function (root) {
+'use strict';
+const A = root.ATMED || (typeof require !== 'undefined' ? require('./core.js') : null);
+const clamp = A.clamp;
+
+/* ------------------------------------------------------------------
+   Generic settings ("g"): everything an effect can do
+   ch       channel it is meant for 0..3 (3 = noise: notes are ignored)
+   vol      start volume 0..63
+   seq      notes [{n, l}]; n 0 = rest, l = ticks
+   fade     volume fade per tick (positive = fade out, negative = swell); 0 = none
+   fadeEvery  fade one step every N ticks (1 = every tick)
+   pslide   pitch slide in Hz per tick (negative = falling), 0 = none
+   pslideT  ticks the pitch slide lasts, then the fade takes over
+   glis     semitone glide: 0 none, +k up one semitone every k ticks, -k down
+   wobble   'none' | 'vib' | 'trem'   with wd (depth) and wr (rate)
+   tex      'none' | 'arp' | 'cut'    arp: chord + arpT (ticks/step); cut: cutN
+   rumble   noise retrigger byte (CH3 only), 0 = off
+   tail     extra ticks of silence/decay after the notes
+   ------------------------------------------------------------------ */
+const DEFAULT_G = { ch: 1, vol: 40, seq: [{ n: 37, l: 8 }], fade: 0, fadeEvery: 1, pslide: 0, pslideT: 8, glis: 0, wobble: 'none', wd: 2, wr: 3, tex: 'none', chord: 'maj', arpT: 1, cutN: 2, rumble: 0, tail: 0 };
+
+function compile(g0) {
+  const g = Object.assign({}, DEFAULT_G, g0);
+  const noise = g.ch === 3;
+  const warn = [];
+  let seq = (g.seq || []).map(s => ({ n: clamp(s.n | 0, 0, 63), l: Math.max(1, s.l | 0) }));
+  if (!seq.length) seq = [{ n: 37, l: 4 }];
+  if (noise) { const tot = seq.reduce((a, s) => a + s.l, 0); seq = [{ n: -1, l: tot }]; }
+  let total = seq.reduce((a, s) => a + s.l, 0);
+  if (g.tail > 0) { if (noise) seq[0].l += g.tail; else seq.push({ n: 0, l: g.tail }); total += g.tail; }
+  const ev = {};   /* tick -> [cmd] */
+  const add = (t, c) => { (ev[t] = ev[t] || []).push(c); };
+  const C = (k, a) => A.mkCmd(k, a, null);
+  const vol = clamp(g.vol | 0, 0, 63);
+  add(0, C('vol', [vol]));
+  /* slot: pitch slide first, then fade */
+  const fade = g.fade | 0;
+  const fadeCmd = () => {
+    if (fade === 0) return null;
+    const mag = Math.abs(fade), up = fade < 0;
+    const e = Math.max(1, g.fadeEvery | 0);
+    if (e > 1) return C('slvola', [up ? mag : -mag, e - 1]);
+    return C('slvol', [up ? mag : -mag]);
+  };
+  if (!noise && g.pslide) {
+    add(0, C('slfrq', [clamp(g.pslide | 0, -127, 127)]));
+    const sw = clamp(g.pslideT | 0, 1, total);
+    if (sw < total) {
+      const f = fadeCmd();
+      add(sw, f || C('slfrqoff', []));
+    }
+  } else { const f = fadeCmd(); if (f) add(0, f); }
+  /* a rising volume must be stopped before it passes 63 */
+  if (fade < 0 && !(!noise && g.pslide)) {
+    const step = Math.abs(fade) / Math.max(1, g.fadeEvery | 0);
+    const tStop = Math.ceil((63 - vol) / step);
+    if (tStop < total) add(Math.max(1, tStop - 1), C('slvoloff', []));
+  }
+  if (!noise && g.tex === 'arp') { const c = A.chordById(g.chord) || A.CHORDS[0]; add(0, C('arp', [c.a, A.arpY(g.arpT | 0 || 1, true, c.two)])); }
+  else if (!noise && g.tex === 'cut') add(0, C('cut', [0x20 + clamp(g.cutN | 0, 0, 31)]));
+  if (g.wobble === 'vib' && !noise) add(0, C('vib', [clamp(g.wd | 0, 0, 255), clamp(g.wr | 0, 0, 31)]));
+  else if (g.wobble === 'trem') add(0, C('trem', [clamp(g.wd | 0, 0, 255), clamp(g.wr | 0, 0, 31)]));
+  if (!noise && g.glis) { const per = g.glis < 0 ? Math.max(1, -g.glis) : Math.max(2, g.glis); add(0, C('glis', [((per - 1) & 127) | (g.glis < 0 ? 0x80 : 0)])); }   /* an upward GLIS(0) does nothing in the playroutine, so the shortest upward step is 2 ticks */
+  if (noise && g.rumble) { add(0, C('nse', [g.rumble & 255])); if (total >= 2) add(total - 1, C('nseoff', [])); }
+  let t = 0;
+  seq.forEach(s => {
+    if (s.n > 0) add(t, { b: [s.n], t: A.noteMacro(s.n) });
+    else if (s.n === 0) add(t, { b: [0], t: '0x00', cm: 'rest' });
+    t += s.l;
+  });
+  /* emit with delays between event ticks */
+  const ticks = Object.keys(ev).map(Number).sort((a, b) => a - b);
+  const cmds = []; let cur = 0;
+  ticks.forEach(tk => {
+    if (tk > cur) { A.delayCmds(tk - cur).forEach(d => cmds.push(d)); cur = tk; }
+    /* order inside one tick: state commands first, then the note */
+    const list = ev[tk]; const st = list.filter(c => c.b[0] >= 0x40), nt = list.filter(c => c.b[0] < 0x40);
+    st.concat(nt).forEach(c => cmds.push(c));
+  });
+  if (total > cur) A.delayCmds(total - cur).forEach(d => cmds.push(d));
+  const bytes = []; cmds.forEach(c => c.b.forEach(x => bytes.push(x))); bytes.push(0x9F);
+  return { cmds: cmds, bytes: Uint8Array.from(bytes), size: bytes.length, ticks: total, ch: g.ch, warnings: warn, g: g };
+}
+
+/* ------------------------------------------------------------------
+   Starter effects.  ctl: sliders (type 'r' range, 's' select)
+   build(p) returns generic settings.  P(n) keeps notes in range.
+   ------------------------------------------------------------------ */
+const P = n => clamp(Math.round(n), 1, 63);
+const R = (id, label, min, max, def, o) => Object.assign({ id: id, label: label, type: 'r', min: min, max: max, def: def, step: 1 }, o || {});
+const S = (id, label, opts, def) => ({ id: id, label: label, type: 's', opts: opts, def: def });
+const noteLab = v => A.noteName(v);
+const SCALES = { major: [0, 4, 7, 12, 16, 19, 24], minor: [0, 3, 7, 12, 15, 19, 24], whole: [0, 2, 4, 6, 8, 10, 12], pent: [0, 2, 4, 7, 9, 12, 14] };
+
+const STARTERS = [
+  { id: 'jump', cat: 'Movement', name: 'Jump', ch: 1, desc: 'A quick upward glide that fades out. The classic platformer hop.',
+    ctl: [R('pitch', 'Start pitch', 13, 43, 25, { fmt: noteLab }), R('speed', 'Climb (ticks per semitone)', 2, 6, 2), R('len', 'Length (ticks)', 4, 30, 14), R('vol', 'Volume', 10, 63, 50), R('fade', 'Fade out', 0, 8, 3)],
+    build: p => ({ ch: 1, vol: p.vol, fade: p.fade, glis: p.speed, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'land', cat: 'Movement', name: 'Land / thud', ch: 1, desc: 'A short falling thump when something lands.',
+    ctl: [R('pitch', 'Start pitch', 5, 30, 17, { fmt: noteLab }), R('fall', 'Fall speed', 10, 120, 50), R('len', 'Length (ticks)', 2, 14, 6), R('vol', 'Volume', 10, 63, 56)],
+    build: p => ({ ch: 1, vol: p.vol, pslide: -p.fall, pslideT: Math.max(1, p.len - 2), fade: Math.ceil(p.vol / 2), seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'bounce', cat: 'Movement', name: 'Boing / bounce', ch: 1, desc: 'A springy note that wobbles while it slides down.',
+    ctl: [R('pitch', 'Pitch', 20, 50, 34, { fmt: noteLab }), R('drop', 'Drop speed', 1, 6, 2), R('wob', 'Wobble', 1, 12, 5), R('len', 'Length (ticks)', 6, 30, 16), R('vol', 'Volume', 10, 63, 44)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, fadeEvery: 2, glis: -p.drop, wobble: 'vib', wd: p.wob, wr: 1, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'dash', cat: 'Movement', name: 'Dash / whoosh', ch: 3, desc: 'A burst of noise that swells and dies: wind, a swing, a dash.',
+    ctl: [R('len', 'Length (ticks)', 4, 30, 12), R('vol', 'Volume', 10, 63, 40), R('swell', 'Swell (0 = instant)', 0, 6, 3)],
+    build: p => ({ ch: 3, vol: p.swell ? 4 : p.vol, fade: p.swell ? -p.swell * 2 : Math.ceil(p.vol / p.len), seq: [{ n: 0, l: p.len }], tail: p.swell ? Math.round(p.len / 2) : 0 }) },
+  { id: 'coin', cat: 'Pick-ups', name: 'Coin / pick-up', ch: 1, desc: 'Two quick rising notes. The sound of collecting something.',
+    ctl: [R('pitch', 'First pitch', 30, 58, 46, { fmt: noteLab }), R('step', 'Second note higher by', 2, 12, 5), R('speed', 'First note (ticks)', 1, 6, 2), R('hold', 'Second note (ticks)', 3, 20, 9), R('vol', 'Volume', 10, 63, 40)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 2, seq: [{ n: P(p.pitch), l: p.speed }, { n: P(p.pitch + p.step), l: p.hold }] }) },
+  { id: 'powerup', cat: 'Pick-ups', name: 'Power-up', ch: 1, desc: 'A quick run of rising notes.',
+    ctl: [R('root', 'Start pitch', 13, 40, 25, { fmt: noteLab }), R('steps', 'Notes', 3, 7, 5), R('speed', 'Speed (ticks/note)', 1, 4, 2), S('scale', 'Scale', [['major', 'Major'], ['minor', 'Minor'], ['whole', 'Whole tone'], ['pent', 'Pentatonic']], 'major'), R('vol', 'Volume', 10, 63, 38)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, seq: SCALES[p.scale].slice(0, p.steps).map((o, i, a) => ({ n: P(p.root + o), l: i === a.length - 1 ? p.speed * 3 : p.speed })) }) },
+  { id: 'lifeup', cat: 'Pick-ups', name: 'Extra life / level up', ch: 1, desc: 'A happy little fanfare: notes climbing up a chord, the last one held.',
+    ctl: [R('root', 'Start pitch', 13, 40, 25, { fmt: noteLab }), R('steps', 'Notes', 3, 7, 6), R('speed', 'Speed (ticks/note)', 2, 8, 4), S('scale', 'Scale', [['major', 'Major'], ['minor', 'Minor'], ['pent', 'Pentatonic']], 'major'), R('vol', 'Volume', 10, 63, 40)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, seq: SCALES[p.scale].slice(0, p.steps).map((o, i, a) => ({ n: P(p.root + o), l: i === a.length - 1 ? p.speed * 4 : p.speed })) }) },
+  { id: 'sparkle', cat: 'Pick-ups', name: 'Magic sparkle', ch: 1, desc: 'A shimmering chord that fades away.',
+    ctl: [R('pitch', 'Pitch', 25, 55, 40, { fmt: noteLab }), S('chord', 'Chord', [['maj', 'Major'], ['min', 'Minor'], ['maj7', 'Maj7'], ['dim', 'Diminished'], ['aug', 'Augmented']], 'maj7'), R('speed', 'Shimmer speed', 1, 3, 1), R('len', 'Length (ticks)', 8, 40, 22), R('vol', 'Volume', 10, 63, 36)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, fadeEvery: 2, tex: 'arp', chord: p.chord, arpT: p.speed, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'select', cat: 'Menu', name: 'Menu select', ch: 1, desc: 'A short confirming beep.',
+    ctl: [R('pitch', 'Pitch', 25, 58, 46, { fmt: noteLab }), R('len', 'Length (ticks)', 1, 10, 3), R('vol', 'Volume', 10, 63, 36), R('fade', 'Fade out', 0, 8, 2)],
+    build: p => ({ ch: 1, vol: p.vol, fade: p.fade, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'cursor', cat: 'Menu', name: 'Cursor move', ch: 1, desc: 'A tiny click for moving through a menu.',
+    ctl: [R('pitch', 'Pitch', 25, 60, 50, { fmt: noteLab }), R('len', 'Length (ticks)', 1, 4, 1), R('vol', 'Volume', 10, 63, 30)],
+    build: p => ({ ch: 1, vol: p.vol, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'confirm', cat: 'Menu', name: 'Double beep', ch: 1, desc: 'Two equal beeps with a short gap: "ok" or "ready".',
+    ctl: [R('pitch', 'Pitch', 25, 58, 42, { fmt: noteLab }), R('on', 'Beep (ticks)', 1, 8, 3), R('gap', 'Gap (ticks)', 1, 8, 2), R('count', 'Beeps', 2, 5, 2), R('vol', 'Volume', 10, 63, 36)],
+    build: p => { const s = []; for (let i = 0; i < p.count; i++) { s.push({ n: P(p.pitch), l: p.on }); if (i < p.count - 1) s.push({ n: 0, l: p.gap }); } return { ch: 1, vol: p.vol, seq: s }; } },
+  { id: 'back', cat: 'Menu', name: 'Cancel / back', ch: 1, desc: 'Two notes going down: "no" or "back".',
+    ctl: [R('pitch', 'First pitch', 25, 55, 40, { fmt: noteLab }), R('step', 'Second note lower by', 2, 12, 5), R('len', 'Note length (ticks)', 2, 10, 4), R('vol', 'Volume', 10, 63, 36)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, seq: [{ n: P(p.pitch), l: p.len }, { n: P(p.pitch - p.step), l: p.len * 2 }] }) },
+  { id: 'laser', cat: 'Weapons', name: 'Laser / zap', ch: 1, desc: 'A high note that drops fast. Pew!',
+    ctl: [R('pitch', 'Start pitch', 30, 63, 55, { fmt: noteLab }), R('fall', 'Fall speed', 10, 127, 70), R('len', 'Length (ticks)', 4, 24, 10), R('vol', 'Volume', 10, 63, 40)],
+    build: p => ({ ch: 1, vol: p.vol, pslide: -p.fall, pslideT: Math.max(1, p.len - 3), fade: Math.ceil(p.vol / 3), seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'rise', cat: 'Weapons', name: 'Rising blip', ch: 1, desc: 'A note that climbs quickly. Good for "activate" or "charge".',
+    ctl: [R('pitch', 'Start pitch', 13, 50, 30, { fmt: noteLab }), R('rise', 'Rise speed', 10, 127, 50), R('len', 'Length (ticks)', 4, 24, 10), R('vol', 'Volume', 10, 63, 38)],
+    build: p => ({ ch: 1, vol: p.vol, pslide: p.rise, pslideT: Math.max(1, p.len - 3), fade: Math.ceil(p.vol / 3), seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'shot', cat: 'Weapons', name: 'Shot / blaster', ch: 3, desc: 'A sharp burst of noise with a short tail.',
+    ctl: [R('len', 'Length (ticks)', 2, 16, 6), R('vol', 'Volume', 10, 63, 50)],
+    build: p => ({ ch: 3, vol: p.vol, fade: Math.ceil(p.vol / p.len), seq: [{ n: 0, l: p.len }] }) },
+  { id: 'rapid', cat: 'Weapons', name: 'Machine gun / roll', ch: 3, desc: 'A buzzing roll of noise (tremolo on a rising volume).',
+    ctl: [R('len', 'Length (ticks)', 8, 60, 24), R('depth', 'Roughness', 2, 10, 6), R('vol', 'Start volume', 8, 40, 20), R('rise', 'Swell', 0, 3, 1)],
+    build: p => ({ ch: 3, vol: p.vol, fade: p.rise ? -p.rise : Math.max(1, Math.ceil(p.vol / p.len)), wobble: 'trem', wd: p.depth, wr: 0, seq: [{ n: 0, l: p.len }] }) },
+  { id: 'hit', cat: 'Impacts', name: 'Hit / punch', ch: 3, desc: 'A short noise thump when something is hit.',
+    ctl: [R('len', 'Length (ticks)', 2, 14, 5), R('vol', 'Volume', 10, 63, 58)],
+    build: p => ({ ch: 3, vol: p.vol, fade: Math.ceil(p.vol / p.len), seq: [{ n: 0, l: p.len }] }) },
+  { id: 'hurt', cat: 'Impacts', name: 'Ouch / hurt', ch: 1, desc: 'A rough falling wail: the player got hit.',
+    ctl: [R('pitch', 'Start pitch', 15, 45, 30, { fmt: noteLab }), R('drop', 'Drop speed', 1, 5, 2), R('rough', 'Roughness', 2, 20, 8), R('len', 'Length (ticks)', 8, 40, 18), R('vol', 'Volume', 10, 63, 46)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, fadeEvery: 2, glis: -p.drop, wobble: 'vib', wd: p.rough, wr: 0, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'explosion', cat: 'Impacts', name: 'Explosion', ch: 3, desc: 'A big noise burst that rumbles and fades.',
+    ctl: [R('len', 'Length (ticks)', 10, 80, 30), R('vol', 'Volume', 20, 63, 63), S('rumble', 'Rumble', [[0, 'none'], [0x14, 'low'], [0x15, 'medium'], [0x16, 'high']], 0x14)],
+    build: p => ({ ch: 3, vol: p.vol, fade: Math.max(1, Math.ceil(p.vol / p.len)), fadeEvery: 1, rumble: +p.rumble, seq: [{ n: 0, l: p.len }] }) },
+  { id: 'thunder', cat: 'Impacts', name: 'Thunder / rumble', ch: 3, desc: 'A long low rumble that slowly dies away.',
+    ctl: [R('len', 'Length (ticks)', 30, 150, 80), R('vol', 'Volume', 20, 63, 48), R('speed', 'Rumble type (low .. high)', 0, 2, 0)],
+    build: p => ({ ch: 3, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.len / p.vol)), rumble: 0x14 + p.speed, seq: [{ n: 0, l: p.len }] }) },
+  { id: 'alarm', cat: 'Alerts', name: 'Siren / alarm', ch: 1, desc: 'Two notes that switch back and forth.',
+    ctl: [R('pitch', 'Low pitch', 20, 50, 34, { fmt: noteLab }), R('step', 'High note above by', 2, 12, 7), R('speed', 'Switch (ticks)', 2, 12, 5), R('count', 'Switches', 2, 12, 6), R('vol', 'Volume', 10, 63, 36)],
+    build: p => { const s = []; for (let i = 0; i < p.count; i++) s.push({ n: P(p.pitch + (i % 2 ? p.step : 0)), l: p.speed }); return { ch: 1, vol: p.vol, seq: s, tail: 0 }; } },
+  { id: 'warning', cat: 'Alerts', name: 'Warning beeps', ch: 1, desc: 'Evenly spaced beeps: low health, time running out.',
+    ctl: [R('pitch', 'Pitch', 20, 55, 38, { fmt: noteLab }), R('on', 'Beep (ticks)', 2, 10, 4), R('gap', 'Gap (ticks)', 2, 12, 5), R('count', 'Beeps', 1, 6, 3), R('vol', 'Volume', 10, 63, 40)],
+    build: p => { const s = []; for (let i = 0; i < p.count; i++) { s.push({ n: P(p.pitch), l: p.on }); if (i < p.count - 1) s.push({ n: 0, l: p.gap }); } return { ch: 1, vol: p.vol, seq: s }; } },
+  { id: 'hum', cat: 'Alerts', name: 'Hum / engine', ch: 2, desc: 'A low wobbling tone. Longer loops make a good engine.',
+    ctl: [R('pitch', 'Pitch', 1, 30, 10, { fmt: noteLab }), R('depth', 'Wobble depth', 0, 12, 4), R('rate', 'Wobble speed', 0, 8, 2), R('len', 'Length (ticks)', 8, 80, 30), R('vol', 'Volume', 10, 63, 44)],
+    build: p => ({ ch: 2, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.len / p.vol)), wobble: 'vib', wd: p.depth, wr: p.rate, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'gameover', cat: 'Jingles', name: 'Game over', ch: 1, desc: 'Notes stepping slowly down.',
+    ctl: [R('pitch', 'Start pitch', 25, 55, 40, { fmt: noteLab }), R('steps', 'Notes', 3, 6, 4), R('speed', 'Speed (ticks/note)', 4, 14, 8), R('vol', 'Volume', 10, 63, 40)],
+    build: p => { const o = [0, -2, -5, -7, -10, -12]; return { ch: 1, vol: p.vol, fade: 1, seq: o.slice(0, p.steps).map((x, i, a) => ({ n: P(p.pitch + x), l: i === a.length - 1 ? p.speed * 3 : p.speed })) }; } },
+  { id: 'drop', cat: 'Movement', name: 'Bubble / water drop', ch: 1, desc: 'A tiny rising "bloop".',
+    ctl: [R('pitch', 'Pitch', 25, 55, 40, { fmt: noteLab }), R('speed', 'Climb (ticks per semitone)', 2, 4, 2), R('len', 'Length (ticks)', 3, 14, 7), R('vol', 'Volume', 10, 63, 36)],
+    build: p => ({ ch: 1, vol: p.vol, fade: Math.ceil(p.vol / p.len / 1.2), glis: p.speed, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'charge', cat: 'Weapons', name: 'Charge up', ch: 1, desc: 'A long swelling climb. Release it with a laser or an explosion.',
+    ctl: [R('pitch', 'Start pitch', 10, 40, 20, { fmt: noteLab }), R('speed', 'Climb (ticks/semitone)', 2, 6, 2), R('len', 'Length (ticks)', 16, 80, 40), R('vol', 'Start volume', 4, 40, 10)],
+    build: p => ({ ch: 1, vol: p.vol, fade: -1, fadeEvery: Math.max(1, Math.round(p.len / (60 - p.vol))), glis: p.speed, seq: [{ n: P(p.pitch), l: p.len }] }) }
+];
+const CATS = ['Movement', 'Pick-ups', 'Menu', 'Weapons', 'Impacts', 'Alerts', 'Jingles'];
+
+function defaultsOf(st) { const p = {}; st.ctl.forEach(c => { p[c.id] = c.def; }); return p; }
+function starterById(id) { return STARTERS.filter(s => s.id === id)[0]; }
+function gOfEffect(e) { if (e.adv) return e.adv; const st = starterById(e.preset); const g = st.build(e.p); g.ch = e.ch !== undefined && e.ch !== null ? e.ch : g.ch; if (st.ch === 3 && g.ch !== 3) g.seq = g.seq.map(x => x.n === 0 ? { n: 20, l: x.l } : x);   /* a noise starter on a tone channel needs a note */
+  return g; }
+function compileEffect(e) { return compile(gOfEffect(e)); }
+
+/* ---------------- project ---------------- */
+function newProject() { return { v: 1, name: 'sfx', tempo: 30, effects: [], seq: 1 }; }
+function addEffect(pr, presetId, name) {
+  const st = starterById(presetId); const id = 'e' + (pr.seq++);
+  const e = { id: id, name: name || st.name, preset: presetId, p: defaultsOf(st), ch: st.ch, adv: null };
+  pr.effects.push(e); return e;
+}
+function ident(s) { s = String(s || 'sfx').replace(/[^A-Za-z0-9_]/g, '_'); if (!/^[A-Za-z_]/.test(s)) s = '_' + s; return s; }
+function camel(n) { const w = String(n || 'effect').split(/[^A-Za-z0-9]+/).filter(Boolean); let r = w.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(''); if (!r) r = 'Effect'; return r; }
+const CHN = ['CH_ZERO', 'CH_ONE', 'CH_TWO', 'CH_THREE'];
+function exportText(pr) {
+  const L = []; const W = s => L.push(s);
+  const name = ident(pr.name).toUpperCase();
+  W('#ifndef ' + name + '_H'); W('#define ' + name + '_H'); W('');
+  W('// ---------------------------------------------------------------------------');
+  W('//  Sound effects for ATM.playSfx()  (made with the ATMlib Sound Effects Editor)');
+  W('//  Play one with:  ATM.playSfx(sfxName, CH_ONE);   (use the channel noted at each effect)');
+  W('//  Lengths are in song ticks: an effect is shorter in a faster song. Designed at tempo ' + pr.tempo + '.');
+  W('// ---------------------------------------------------------------------------'); W('');
+  W('#include <ATMcmds.h>'); W('');
+  let tot = 0; const used = {};
+  pr.effects.forEach(e => {
+    const r = compileEffect(e); tot += r.size;
+    const nm = 'sfx' + camel(e.name); let u = nm, k = 2; while (used[u]) u = nm + (k++); used[u] = 1;
+    W('// ' + e.name + ': ' + r.size + ' bytes, ' + r.ticks + ' ticks (' + (r.ticks / pr.tempo).toFixed(2) + ' s at tempo ' + pr.tempo + '), use on ' + CHN[r.ch]);
+    W('ATM_SFX_TRACK(' + u + ',');
+    const lines = []; let cur = [];
+    r.cmds.forEach(c => { cur.push(c.t); const end = c.b[0] >= 0xA0 && c.b[0] <= 0xE0; if (end) { lines.push(cur.join(', ')); cur = []; } });
+    if (cur.length) lines.push(cur.join(', '));
+    lines.forEach((ln, i) => W('  ' + ln + (i < lines.length - 1 ? ',' : '')));
+    W(');'); W('');
+  });
+  W('// total: ' + tot + ' bytes in ' + pr.effects.length + ' effect' + (pr.effects.length === 1 ? '' : 's')); W('');
+  W('#endif');
+  return L.join('\n');
+}
+
+const API = { DEFAULT_G, compile, STARTERS, CATS, SCALES, defaultsOf, starterById, gOfEffect, compileEffect, newProject, addEffect, exportText, ident, camel, CHN };
+if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.ATMSFX = API;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script><script>(function () {
+'use strict';
+const A = window.ATMED, F = window.ATMSFX;
+A.setEngine(function () { return AtmLib(); });
+const $ = s => document.querySelector(s);
+function h(tag, attrs) {
+  const el = document.createElement(tag);
+  if (attrs) Object.keys(attrs).forEach(k => {
+    const v = attrs[k]; if (v === undefined || v === null || v === false) return;
+    if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v);
+    else if (k === 'class') el.className = v; else if (k === 'style') el.style.cssText = v;
+    else if (k === 'value' || k === 'checked' || k === 'disabled' || k === 'selected') el[k] = v;
+    else el.setAttribute(k, v === true ? '' : v);
+  });
+  for (let i = 2; i < arguments.length; i++) {
+    const c = arguments[i]; if (c === null || c === undefined || c === false) continue;
+    if (Array.isArray(c)) c.forEach(x => x && el.appendChild(typeof x === 'string' ? document.createTextNode(x) : x));
+    else el.appendChild(typeof c === 'string' || typeof c === 'number' ? document.createTextNode(String(c)) : c);
+  }
+  return el;
+}
+let toastT = null;
+function toast(m) { const t = $('#toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => { t.style.display = 'none'; }, 4200); }
+
+/* ---------------- state ---------------- */
+let pr;
+const UI = { left: 'effects', sel: null, auto: true, adv: false, viz: null };
+const undoS = [], redoS = [];
+const snapJ = () => JSON.stringify(pr);
+function saveLocal() { try { localStorage.setItem('atmsfx.project', snapJ()); } catch (e) {} }
+function checkpoint(prev) { if (prev === snapJ()) return; undoS.push(prev); if (undoS.length > 150) undoS.shift(); redoS.length = 0; saveLocal(); }
+function mutate(fn, noRender) { const p = snapJ(); fn(); checkpoint(p); if (!noRender) renderAll(); }
+function doUndo() { if (!undoS.length) return; redoS.push(snapJ()); pr = JSON.parse(undoS.pop()); fixSel(); saveLocal(); renderAll(); }
+function doRedo() { if (!redoS.length) return; undoS.push(snapJ()); pr = JSON.parse(redoS.pop()); fixSel(); saveLocal(); renderAll(); }
+function fixSel() { if (UI.sel && !pr.effects.some(e => e.id === UI.sel)) UI.sel = pr.effects.length ? pr.effects[0].id : null; }
+const curE = () => pr.effects.filter(e => e.id === UI.sel)[0] || null;
+function starter() {
+  const p = F.newProject(); ['jump', 'coin', 'laser', 'explosion'].forEach(id => F.addEffect(p, id)); return p;
+}
+try { const j = localStorage.getItem('atmsfx.project'); pr = j ? JSON.parse(j) : starter(); if (!pr.effects) pr = starter(); } catch (e) { pr = starter(); }
+UI.sel = pr.effects.length ? pr.effects[0].id : null;
+
+/* ---------------- audio ---------------- */
+let AC = null, src = null, reqId = 0;
+function ctx() { if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); return AC; }
+['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, function () { try { ctx(); } catch (e) {} }, { passive: true }));
+function playPcm(r) {
+  const c = ctx(); const sr = c.sampleRate, k = A.SR / sr, n = Math.floor(r.pcm.length / k); const d = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const x = i * k, j = Math.floor(x), f = x - j; const a = r.pcm[j], b = j + 1 < r.pcm.length ? r.pcm[j + 1] : a; d[i] = a + (b - a) * f; }
+  const buf = c.createBuffer(1, n, sr); buf.copyToChannel(d, 0);
+  if (src) { try { src.stop(); } catch (e) {} }
+  src = c.createBufferSource(); src.buffer = buf; src.connect(c.destination); src.start();
+}
+async function renderCompiled(r) {
+  const streams = [null, null, null, null]; streams[r.ch] = r.bytes;
+  return A.renderStreams(streams, r.ticks, pr.tempo, { tail: 0.25 });
+}
+function analyse(o) {
+  const cia = o.cia, T = Math.max(1, Math.floor(o.pcm.length / cia)), out = [];
+  for (let t = 0; t < T; t++) {
+    let mn = 1e9, mx = -1e9, s = 0; for (let i = 0; i < cia; i++) { const v = o.pcm[t * cia + i]; if (v < mn) mn = v; if (v > mx) mx = v; s += v; }
+    const m = s / cia; let cr = 0; for (let i = 1; i < cia; i++) { const a = o.pcm[t * cia + i - 1] - m, b = o.pcm[t * cia + i] - m; if (a < 0 && b >= 0) cr++; }
+    out.push({ a: (mx - mn) / 2, f: cr * A.SR / cia });
+  }
+  return out;
+}
+async function playEffect(e, quiet) {
+  const my = ++reqId; const r = F.compileEffect(e);
+  let o; try { o = await renderCompiled(r); } catch (x) { toast('Playback failed: ' + x.message); return; }
+  if (my !== reqId) return;
+  playPcm(o);
+  if (e.id === UI.sel) { UI.viz = { id: e.id, data: analyse(o), r: r, tempo: pr.tempo }; drawViz(); }
+}
+async function refreshViz() {
+  const e = curE(); if (!e) return; const my = ++reqId; const r = F.compileEffect(e);
+  try { const o = await renderCompiled(r); if (my !== reqId) return; UI.viz = { id: e.id, data: analyse(o), r: r, tempo: pr.tempo }; drawViz(); } catch (x) {}
+}
+let autoT = null;
+function schedule(e) { clearTimeout(autoT); autoT = setTimeout(() => { if (UI.auto) playEffect(e); else refreshViz(); }, 140); }
+async function playStarter(st) {
+  const pj = F.newProject(); const e = F.addEffect(pj, st.id); const my = ++reqId; const r = F.compileEffect(e);
+  try { const o = await renderCompiled(r); if (my !== reqId) return; playPcm(o); } catch (x) { toast('Playback failed: ' + x.message); }
+}
+
+/* ---------------- header ---------------- */
+function download(name, text, mime) { const a = h('a', { href: URL.createObjectURL(new Blob([text], { type: mime || 'text/plain' })), download: name }); document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+function initHeader() {
+  $('#btnPlay').onclick = () => { const e = curE(); if (e) playEffect(e); };
+  $('#btnUndo').onclick = doUndo; $('#btnRedo').onclick = doRedo;
+  $('#btnNew').onclick = () => { if (confirm('Start an empty project? (Undo can bring the current one back.)')) { const p = snapJ(); pr = F.newProject(); UI.sel = null; checkpoint(p); renderAll(); } };
+  $('#btnReset').onclick = () => { if (confirm('Reset the editor? This throws away the current project and the browser autosave, and brings back the starter set.')) { try { localStorage.removeItem('atmsfx.project'); } catch (e) {} undoS.length = 0; redoS.length = 0; pr = starter(); UI.sel = pr.effects[0].id; UI.adv = false; saveLocal(); renderAll(); toast('Editor reset.'); } };
+  $('#btnSave').onclick = () => download(F.ident(pr.name) + '.atmsfx.json', JSON.stringify(pr, null, 1), 'application/json');
+  $('#btnOpen').onclick = () => $('#fileOpen').click();
+  $('#fileOpen').onchange = ev => { const f = ev.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { const o = JSON.parse(String(r.result)); if (!o.effects) throw new Error('no effects in this file'); const p = snapJ(); pr = o; pr.tempo = pr.tempo || 30; pr.seq = pr.seq || 100; UI.sel = pr.effects[0] ? pr.effects[0].id : null; checkpoint(p); renderAll(); } catch (x) { toast('Not a sound effects file: ' + x.message); } }; r.readAsText(f); ev.target.value = ''; };
+  const tp = $('#tempo'); tp.onchange = () => mutate(() => { pr.tempo = A.clamp(parseInt(tp.value, 10) || 30, 4, 127); });
+}
+
+/* ---------------- left ---------------- */
+function renderLeft() {
+  const el = $('#left'); const keep = el.scrollTop; el.innerHTML = '';
+  el.appendChild(h('div', { class: 'tabs' }, [['effects', 'My effects (' + pr.effects.length + ')'], ['starters', 'Starters']].map(t => h('button', { class: UI.left === t[0] ? 'active' : '', onclick: () => { UI.left = t[0]; renderLeft(); } }, t[1]))));
+  if (UI.left === 'effects') {
+    if (!pr.effects.length) el.appendChild(h('p', { class: 'hint' }, 'No effects yet. Open the Starters tab and press + on one you like.'));
+    pr.effects.forEach(e => {
+      const r = F.compileEffect(e);
+      el.appendChild(h('div', { class: 'item' + (e.id === UI.sel ? ' sel' : ''), onclick: () => { UI.sel = e.id; UI.adv = !!e.adv; renderAll(); refreshViz(); } },
+        h('span', { class: 'nm' }, e.name), h('span', { class: 'meta' }, r.size + ' B · CH' + r.ch),
+        h('button', { class: 'sm', title: 'Play', onclick: ev => { ev.stopPropagation(); playEffect(e); } }, '▶')));
+    });
+    el.appendChild(h('p', { class: 'hint', style: 'margin-top:10px' }, 'Total: ' + pr.effects.reduce((a, e) => a + F.compileEffect(e).size, 0) + ' bytes in your sketch.'));
+  } else {
+    el.appendChild(h('p', { class: 'hint' }, 'Starting points. Press ▶ to listen, + to add one to your effects, then change it with the sliders.'));
+    F.CATS.forEach(c => {
+      el.appendChild(h('div', { class: 'cat' }, c));
+      F.STARTERS.filter(s => s.cat === c).forEach(st => {
+        el.appendChild(h('div', { class: 'item', title: st.desc, ondblclick: () => addStarter(st) },
+          h('span', { class: 'nm' }, st.name), h('span', { class: 'meta' }, st.ch === 3 ? 'noise' : 'tone'),
+          h('button', { class: 'sm', onclick: () => playStarter(st) }, '▶'), h('button', { class: 'sm', onclick: () => addStarter(st) }, '+')));
+        el.appendChild(h('div', { class: 'desc' }, st.desc));
+      });
+    });
+  }
+  el.scrollTop = keep;
+}
+function addStarter(st) { mutate(() => { const e = F.addEffect(pr, st.id); UI.sel = e.id; UI.adv = false; }); UI.left = 'effects'; renderAll(); const e = curE(); if (e) playEffect(e); }
+
+/* ---------------- centre ---------------- */
+function fmtVal(c, v) { return c.fmt ? c.fmt(v) : String(v); }
+function randomize(e) {
+  mutate(() => {
+    if (e.adv) { const g = e.adv; g.vol = rnd(10, 63); g.fade = rnd(0, 6); g.seq.forEach(s => { if (s.n > 0) s.n = A.clamp(s.n + rnd(-6, 6), 1, 63); }); return; }
+    const st = F.starterById(e.preset);
+    st.ctl.forEach(c => { if (c.type === 'r') e.p[c.id] = A.clamp(Math.round(rnd(c.min, c.max)), c.min, c.max); else e.p[c.id] = c.opts[Math.floor(Math.random() * c.opts.length)][0]; });
+  }, true);
+  renderAll(); playEffect(e);
+}
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function ctlRow(label, input, valEl) { return h('div', { class: 'ctl' }, h('label', null, label), input, valEl || h('span')); }
+function renderCentre() {
+  const el = $('#centre'); const keep = el.scrollTop; el.innerHTML = '';
+  const e = curE();
+  if (!e) { el.appendChild(h('div', { class: 'empty' }, h('div', null, h('h2', { style: 'margin-top:0' }, 'Make a sound effect'), h('p', null, 'Open the Starters tab on the left, press ▶ to hear a starting point and + to add it. Then change it with the sliders until it sounds right.'), h('button', { onclick: () => { UI.left = 'starters'; renderLeft(); } }, 'Show the starters')))); return; }
+  const st = F.starterById(e.preset); const r = F.compileEffect(e);
+  el.appendChild(h('div', { class: 'bar' },
+    h('input', { type: 'text', value: e.name, style: 'width:190px;font-weight:600', onchange: ev => mutate(() => { e.name = ev.target.value || e.name; }) }),
+    h('label', null, 'Channel '), h('select', { class: 'light', onchange: ev => mutate(() => { e.ch = parseInt(ev.target.value, 10); if (e.adv) e.adv.ch = e.ch; }) }, [['0', 'CH0 pulse'], ['1', 'CH1 square'], ['2', 'CH2 saw'], ['3', 'CH3 noise']].map(o => h('option', { value: o[0], selected: +o[0] === r.ch }, o[1]))),
+    h('span', { class: 'hint' }, 'starter: ' + st.name),
+    h('span', { style: 'margin-left:auto' }),
+    h('label', { title: 'Play the sound whenever you move a slider' }, h('input', { type: 'checkbox', checked: UI.auto, onchange: ev => { UI.auto = ev.target.checked; } }), ' Play while I edit'),
+    h('button', { class: 'play', onclick: () => playEffect(e) }, '▶ Play'),
+    h('button', { class: 'ghost', title: 'Random settings inside the sliders\' ranges', onclick: () => randomize(e) }, '🎲 Surprise me'),
+    h('button', { class: 'ghost', onclick: () => mutate(() => { const c = JSON.parse(JSON.stringify(e)); c.id = 'e' + (pr.seq++); c.name = e.name + ' copy'; pr.effects.splice(pr.effects.indexOf(e) + 1, 0, c); UI.sel = c.id; }) }, 'Duplicate'),
+    h('button', { class: 'ghost', onclick: () => { if (confirm('Delete "' + e.name + '"?')) mutate(() => { pr.effects = pr.effects.filter(x => x !== e); UI.sel = pr.effects[0] ? pr.effects[0].id : null; }); } }, 'Delete')));
+  const body = h('div', { class: 'cbody' });
+  body.appendChild(h('div', { class: 'vizbox' }, h('canvas', { id: 'viz', height: 170 }),
+    h('div', { class: 'vizinfo', id: 'vizinfo' })));
+  body.appendChild(h('h2', null, e.adv ? 'All settings' : 'Sliders'));
+  if (!e.adv) {
+    st.ctl.forEach(c => {
+      const val = h('span', { class: 'val' }, fmtVal(c, e.p[c.id]));
+      let inp;
+      if (c.type === 'r') inp = h('input', { type: 'range', min: c.min, max: c.max, step: c.step, value: e.p[c.id], oninput: ev => { const v = +ev.target.value; e.p[c.id] = v; val.textContent = fmtVal(c, v); upd(e); }, onchange: () => { mutate(() => {}, true); } });
+      else inp = h('select', { class: 'light', onchange: ev => { const o = c.opts.filter(x => String(x[0]) === ev.target.value)[0]; mutate(() => { e.p[c.id] = o[0]; }, true); upd(e); renderCentre(); } }, c.opts.map(o => h('option', { value: o[0], selected: String(o[0]) === String(e.p[c.id]) }, o[1])));
+      body.appendChild(ctlRow(c.label, inp, c.type === 'r' ? val : null));
+    });
+    body.appendChild(h('div', { class: 'row', style: 'margin-top:10px' },
+      h('button', { class: 'ghost', onclick: () => mutate(() => { e.p = F.defaultsOf(st); }) }, 'Back to starter values'),
+      h('button', { class: 'ghost', title: 'Open every setting the playroutine has', onclick: () => mutate(() => { e.adv = JSON.parse(JSON.stringify(F.gOfEffect(e))); UI.adv = true; }) }, 'Edit every setting…')));
+  } else advPanel(body, e);
+  body.appendChild(h('h2', null, 'The commands'));
+  body.appendChild(h('pre', { class: 'cmds', id: 'cmds' }, ''));
+  el.appendChild(body); updInfo(e); drawViz(); el.scrollTop = keep;
+}
+function upd(e) { updInfo(e); schedule(e); saveLocal(); const li = $('#left'); }
+function updInfo(e) {
+  const r = F.compileEffect(e); const c = $('#cmds');
+  if (c) c.textContent = r.cmds.map(x => x.t).join(',\n') + ',\nATM_STOP_CHAN   // added by ATM_SFX_TRACK';
+  const v = $('#vizinfo'); if (v) v.textContent = r.size + ' bytes · ' + r.ticks + ' ticks · ' + (r.ticks / pr.tempo).toFixed(2) + ' s at tempo ' + pr.tempo + ' · plays on CH' + r.ch;
+  renderLeftLight();
+}
+function renderLeftLight() { if (UI.left === 'effects') renderLeft(); renderRight(); }
+function advPanel(body, e) {
+  const g = e.adv; const set = (k, v) => { g[k] = v; upd(e); };
+  const R = (label, key, min, max, step, fmt) => { const val = h('span', { class: 'val' }, fmt ? fmt(g[key]) : g[key]); body.appendChild(ctlRow(label, h('input', { type: 'range', min: min, max: max, step: step || 1, value: g[key], oninput: ev => { const v = +ev.target.value; set(key, v); val.textContent = fmt ? fmt(v) : v; }, onchange: () => mutate(() => {}, true) }), val)); };
+  const S = (label, key, opts) => body.appendChild(ctlRow(label, h('select', { class: 'light', onchange: ev => { const v = isNaN(+ev.target.value) || ev.target.value === '' ? ev.target.value : +ev.target.value; mutate(() => { g[key] = v; }); } }, opts.map(o => h('option', { value: o[0], selected: String(o[0]) === String(g[key]) }, o[1])))));
+  R('Volume', 'vol', 0, 63);
+  R('Fade out (negative = swell)', 'fade', -8, 16);
+  R('Fade: one step every N ticks', 'fadeEvery', 1, 16);
+  R('Pitch slide (Hz per tick)', 'pslide', -127, 127);
+  R('Pitch slide lasts (ticks)', 'pslideT', 1, 80);
+  R('Glide (− down, + up, ticks/semitone)', 'glis', -8, 8, 1, v => v === 0 ? 'off' : (v < 0 ? '↓' + (-v) : '↑' + Math.max(2, v)));
+  S('Wobble', 'wobble', [['none', 'none'], ['vib', 'vibrato (pitch)'], ['trem', 'tremolo (volume)']]);
+  if (g.wobble !== 'none') { R('Wobble depth', 'wd', 0, 20); R('Wobble rate (0 = fastest)', 'wr', 0, 16); }
+  S('Texture', 'tex', [['none', 'none'], ['arp', 'arpeggio (chord)'], ['cut', 'stutter (gate)']]);
+  if (g.tex === 'arp') { S('Chord', 'chord', A.CHORDS.map(c => [c.id, c.name])); R('Ticks per chord note', 'arpT', 1, 8); }
+  if (g.tex === 'cut') R('Stutter length (ticks)', 'cutN', 0, 8);
+  S('Rumble (CH3 only)', 'rumble', [[0, 'none'], [0x14, 'low'], [0x15, 'medium'], [0x16, 'high']]);
+  R('Extra tail (ticks)', 'tail', 0, 40);
+  body.appendChild(h('h2', null, 'Notes'));
+  g.seq.forEach((s, i) => {
+    const nv = h('span', { class: 'val' }, s.n === 0 ? 'rest' : A.noteName(s.n)), lv = h('span', { class: 'val' }, s.l + 't');
+    body.appendChild(h('div', { class: 'ctl notes' }, h('label', null, 'Note ' + (i + 1)),
+      h('input', { type: 'range', min: 0, max: 63, value: s.n, oninput: ev => { s.n = +ev.target.value; nv.textContent = s.n === 0 ? 'rest' : A.noteName(s.n); upd(e); }, onchange: () => mutate(() => {}, true) }), nv,
+      h('label', null, 'long'), h('input', { type: 'range', min: 1, max: 40, value: s.l, oninput: ev => { s.l = +ev.target.value; lv.textContent = s.l + 't'; upd(e); }, onchange: () => mutate(() => {}, true) }), lv,
+      h('button', { class: 'sm ghost', onclick: () => mutate(() => { if (g.seq.length > 1) g.seq.splice(i, 1); }) }, '✕')));
+  });
+  body.appendChild(h('div', { class: 'row' }, h('button', { class: 'sm', onclick: () => mutate(() => { if (g.seq.length < 12) g.seq.push({ n: g.seq[g.seq.length - 1].n || 30, l: 4 }); }) }, '+ note'),
+    h('button', { class: 'ghost', onclick: () => mutate(() => { e.adv = null; UI.adv = false; }) }, 'Back to starter sliders (discard these edits)')));
+}
+function drawViz() {
+  const cv = $('#viz'); if (!cv) return; const e = curE();
+  const V = UI.viz && e && UI.viz.id === e.id ? UI.viz : null;
+  const W = cv.parentElement.clientWidth || 600, H = 170; cv.width = W; cv.height = H; cv.style.width = W + 'px';
+  const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+  g.strokeStyle = '#eee'; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(0, i * H / 4 + .5); g.lineTo(W, i * H / 4 + .5); g.stroke(); }
+  if (!V) { g.fillStyle = '#999'; g.font = '13px sans-serif'; g.fillText('Press Play to see the sound', 14, 24); return; }
+  const d = V.data, n = Math.max(1, V.r.ticks), bw = (W - 20) / Math.max(n, 8), x0 = 10;
+  let mx = 0.05; d.forEach(p => { mx = Math.max(mx, p.a); });
+  d.slice(0, n).forEach((p, i) => { const hh = (p.a / mx) * (H - 36); g.fillStyle = '#8a7a6f'; g.fillRect(x0 + i * bw + 1, H - 16 - hh, Math.max(1, bw - 2), hh); });
+  if (V.r.ch !== 3) {
+    g.strokeStyle = '#c9a227'; g.lineWidth = 3; g.beginPath(); let first = true;
+    d.slice(0, n).forEach((p, i) => { if (p.a < mx * 0.04 || p.f < 40) { first = true; return; } const y = H - 16 - (Math.log(Math.min(p.f, 5000) / 40) / Math.log(5000 / 40)) * (H - 36); const x = x0 + i * bw + bw / 2; if (first) { g.moveTo(x, y); first = false; } else g.lineTo(x, y); });
+    g.stroke(); g.lineWidth = 1;
+  }
+  g.fillStyle = '#6b5f5e'; g.font = '11px sans-serif'; const stepT = n > 60 ? 16 : n > 24 ? 8 : 4;
+  for (let i = 0; i <= n; i += stepT) { g.fillText(i + '', x0 + i * bw, H - 3); }
+  g.fillText('ticks', W - 34, H - 3);
+  g.fillStyle = '#8a7a6f'; g.fillRect(W - 150, 8, 10, 10); g.fillStyle = '#333'; g.fillText('volume', W - 135, 17);
+  if (V.r.ch !== 3) { g.fillStyle = '#c9a227'; g.fillRect(W - 80, 11, 14, 4); g.fillStyle = '#333'; g.fillText('pitch', W - 62, 17); }
+}
+
+/* ---------------- right: export ---------------- */
+function renderRight() {
+  const el = $('#right'); const keep = el.scrollTop; el.innerHTML = '';
+  el.appendChild(h('h2', null, 'Export'));
+  el.appendChild(h('div', { class: 'row' }, h('label', null, 'File name'), h('input', { type: 'text', value: pr.name, style: 'width:130px', onchange: ev => mutate(() => { pr.name = F.ident(ev.target.value); }) })));
+  if (!pr.effects.length) { el.appendChild(h('p', { class: 'hint' }, 'Add an effect to export it.')); return; }
+  const text = F.exportText(pr); const tot = pr.effects.reduce((a, e) => a + F.compileEffect(e).size, 0);
+  el.appendChild(h('div', { class: 'msg ok' }, pr.effects.length + ' effect' + (pr.effects.length === 1 ? '' : 's') + ' · ' + tot + ' bytes'));
+  const ta = h('textarea', { class: 'code', readonly: true, spellcheck: 'false' }); ta.value = text; el.appendChild(ta);
+  el.appendChild(h('div', { class: 'row' },
+    h('button', { onclick: () => { ta.select(); try { navigator.clipboard.writeText(text); } catch (x) { document.execCommand('copy'); } toast('Copied.'); } }, 'Copy'),
+    h('button', { onclick: () => download(F.ident(pr.name) + '.h', text) }, 'Download ' + F.ident(pr.name) + '.h')));
+  el.appendChild(h('h2', null, 'Using it'));
+  const first = pr.effects[0]; const r0 = F.compileEffect(first);
+  el.appendChild(h('pre', { class: 'cmds' }, '#include "' + F.ident(pr.name) + '.h"\n\n// when something happens:\nATM.playSfx(sfx' + F.camel(first.name) + ', ' + F.CHN[r0.ch] + ');'));
+  el.appendChild(h('p', { class: 'hint' }, 'The effect takes the channel for its duration and gives it back to the song afterwards. Pick a channel that is quiet in your song, or CH3 for noise effects.'));
+  el.appendChild(h('h2', null, 'Test tempo'));
+  el.appendChild(h('p', { class: 'hint' }, 'Effects count in song ticks, so they are shorter in a fast song. The test tempo (in the top bar) is only for listening here: set it to the tempo of your game\'s music.'));
+  el.scrollTop = keep;
+}
+
+document.addEventListener('keydown', ev => {
+  const tg = ev.target; if (tg && /^(INPUT|SELECT|TEXTAREA)$/.test(tg.tagName) && tg.type !== 'range' && tg.type !== 'checkbox') return;
+  const k = ev.key.toLowerCase(), mod = ev.ctrlKey || ev.metaKey;
+  if (mod && k === 'z') { ev.preventDefault(); ev.shiftKey ? doRedo() : doUndo(); return; }
+  if (mod && k === 'y') { ev.preventDefault(); doRedo(); return; }
+  if (mod || ev.altKey) return;
+  if (k === ' ') { ev.preventDefault(); const e = curE(); if (e) playEffect(e); }
+});
+function renderAll() {
+  fixSel(); $('#tempo').value = pr.tempo; $('#btnUndo').disabled = !undoS.length; $('#btnRedo').disabled = !redoS.length;
+  renderLeft(); renderCentre(); renderRight();
+}
+window.addEventListener('resize', drawViz);
+initHeader(); renderAll(); refreshViz();
+window.__sfx = { get pr() { return pr; }, UI: UI };
+})();
+</script>
+</body></html>
