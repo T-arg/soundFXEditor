@@ -37,7 +37,7 @@ th{background:var(--panel)}
 </style></head><body>
 <header>
   <a href="https://t-arg.github.io/" target="_blank" rel="noopener"><img src="data:image/gif;base64,R0lGODlheQAuAMIFAEc8Okg8OUY9Nk5BPv7+/P///////////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAcALAAAAAB5AC4AAAP+eHrRHivKSau9OOudA/kf4HBkaZ5PCnEe6DrDKc/z0LpfEG83DqrAxo5GNNk+tkduiOklB74oTheswipJq5CSvSqOBHDux7T0WjCptKeO6iTJ9uu9EJMP4Dz0XKacpw8DXYFyhXR4bIUEh4lLLWINi1N9En9hUIBrSFoqmItfTlaeizF5aZJhjR6Cd2Yve6o4rDqoiks5iCBxakJkjze0m7qeHr24ri9twTlopLY/uDd2ysGRtbdiT2OLwILeOw5Tco2oy4q0VMLPzrqJ6T/h13MPCsU4AIMpAFL428/Fj/b5+KYJWhSBLkQY9BGpGKJp8v75wyGgokUBY6w16jL+ioy6dRPn2LDBgBtDkAbNwUshyF6qgSpcsCoHciY5ew0Y7Hp1aV01W+EAMgQyZwzEcc3cjMzZ0I1JnyF5WXspa+rNeCifDpUEQchUeMy+AopHzg0adw3fwTxqi61XkgA7ivjmDaEsb2jsUvu4UslBrFnL4uyapSqQjn3RIA7rV2HWTWJBkptLZQFAYFrWYL3KUi1Kv48jQua2AJ+xVEDm8tv8zLRZ0DAD6I3KSzOVFfVEnA3CjTNYoJFjvlZV9qRZESIipOhNFHDR38DHwp5H3J3T4TmVB+XNbHYOux4AeL+eODIB3Y3Q34uFfYKSKiuZPTe6mLkD9ETlM8YeP1P+e/foISebPOHMtBBXux2Wj3A92cfJfvKZx41ufsDHxnYQMsbJdvnpt6EVw4imYQWylShgdeLFlOCDCN6X4gMvarHPgwMKJiCJ8A1loYYf2lfeh5dlJqJ9OHKnY3M8inLEckkK1xyQto1QSYp03YddGsg5qANdg1xioJaBrJiWV1S0NF1f7kUyI2bBWRgJlwseKROceM35zSp7tMSNmebRU0lYjOkpHSFbFhfaY+OBIB6fR1ZSTGG3pTgojIvECOSlmLJ4Hj47LUGSZUFyqF+TsPAYJTVnUscgczsJYYef9Ty1HIMs1XlbGUFol6ujuxaJGwOmYQaJH6TAkA6DVQbN1YWuQIBaBbPNkvjErwzcBl1X9JiyCjN4GXpMmlbUE8ggzm65LIkvVBAsQ8Cet4K2jkDXxqe8unpuCqBIGUgd3iDzLQUC5BMDTnUIhAk+JT1aBXgVSlltdviKSwesGwwgEMIo/BABJOBo7O8n4Gb38AoRVzsErCpY8EQNXtTRchaUuLxEw0Hs0G3JeJgp8ZZF9HzCyjRHqx259VLs89E915rFyNUiMgI9uRqN9NQsoMxUNO8+jXXKaFDtNQl08VvKFoKI7XQpcJ79tQQJAAA7" alt="TEAM a.r.g."></a>
-  <h1>ATMlib Sound Effects Editor <span style="color:#6b5f5e;font-weight:500">manual · v0.1.1</span></h1>
+  <h1>ATMlib Sound Effects Editor <span style="color:#6b5f5e;font-weight:500">manual · v0.2.1</span></h1>
   <a class="back" href="index.html">← Back to the editor</a>
 </header>
 <div class="wrap">
@@ -62,19 +62,27 @@ th{background:var(--panel)}
 <div class="tip"><b>Stuck for ideas?</b>Press <b>🎲 Surprise me</b>. It nudges the sliders to random values. Undo (<kbd>Ctrl</kbd>+<kbd>Z</kbd>) brings the old sound back.</div>
 
 <h2 id="starters">Starters</h2>
-<p>Starters are grouped by what they are used for: Movement, Pick-ups, Menu, Weapons, Impacts, Alerts and Jingles. Each is a complete effect that already sounds fine. "tone" starters make a pitched sound, "noise" starters make hiss, wind or rumble.</p>
+<p>Starters are grouped by what they are used for (Movement, Pick-ups, Menu, Weapons, Impacts, Alerts, Jingles) and by the trick they use: <b>Vibrato</b> (the pitch wobbles), <b>Tremolo</b> (the volume throbs), <b>Arpeggio</b> (a chord played note by note, or a chopped-up "stutter" note) and <b>Transpose</b> (a note repeated and shifted up or down each time, or a whole effect shifted by a set amount). Each is a complete effect that already sounds fine. "tone" starters make a pitched sound, "noise" starters make hiss, wind or rumble.</p>
 
 <h2 id="sliders">Sliders</h2>
 <p>Every starter shows only the few sliders that matter for that sound, for example <i>Start pitch</i>, <i>Length</i>, <i>Volume</i> and <i>Fade out</i>. <b>Back to starter values</b> resets them.</p>
 <p>The picture shows the result: bars are the volume per tick, the line is the pitch. Under it you can see the size in bytes, the length in ticks and seconds, and the channel. Below that are the exact commands that will be exported.</p>
 
 <h2 id="advanced">Edit every setting</h2>
-<p>Want more than the sliders offer? Press <b>Edit every setting…</b>. You get all the building blocks: volume, fade out (or swell), pitch slide, glide, wobble (vibrato or tremolo), texture (arpeggio or cut), rumble, extra tail, and a list of notes with their lengths.</p>
+<p>Want more than the sliders offer? Press <b>Edit every setting…</b>. You get all the building blocks: volume, fade out (or swell), pitch slide, glide, wobble (vibrato or tremolo), texture (arpeggio or cut), shift all notes, repeat-and-shift, rumble, extra tail, and a list of notes with their lengths.</p>
 <div class="warn"><b>One way trip</b>Once you edit every setting, the starter sliders no longer apply to that effect. <b>Back to starter sliders</b> discards your detailed edits.</div>
 
-<h2 id="channels">Channels</h2>
-<p>Pick the channel the effect plays on: CH1 and CH2 (square), CH3 (noise and drums) or CH4 (a quiet extra square). While the effect plays, that channel is taken from your music, so choose one your song is not using at that moment, or accept a small gap. Noise-type effects fit CH3. A noise starter placed on a tone channel still works; its rests become a noise note.</p>
-<p>The export lists the channel to use for each effect. Remember to pass the same one to <code>playSfx</code>.</p>
+<h2 id="channels">Channels and colours</h2>
+<p>Every effect plays on one channel, and each channel has its own colour everywhere in the editor (the list, the picture, the buttons):</p>
+<table>
+<tr><th>Channel</th><th>Colour</th><th>Used for</th></tr>
+<tr><td><b>CH0</b></td><td style="color:#d64545"><b>red</b></td><td>tones</td></tr>
+<tr><td><b>CH1</b></td><td style="color:#2f7fd1"><b>blue</b></td><td>tones</td></tr>
+<tr><td><b>CH2</b></td><td style="color:#2e9a5b"><b>green</b></td><td>tones (a softer, saw-like sound)</td></tr>
+<tr><td><b>CH3</b></td><td style="color:#e08a1a"><b>orange</b></td><td>noise only</td></tr>
+</table>
+<p>Pick the channel with the coloured buttons above the picture. <b>Noise effects always play on CH3</b> and tone effects can never go on CH3, so the buttons that don't fit are greyed out. While the effect plays, that channel is borrowed from your music, so choose one your song is not using at that moment.</p>
+<p>The export lists the channel for each effect. Pass the same one to <code>playSfx</code>.</p>
 
 <h2 id="tempo">Tempo and length</h2>
 <p>ATMlib counts in <b>ticks</b>, and a tick is a fixed fraction of your song's tempo. So an effect lasts a different time in a fast song than in a slow one. Set <b>Test tempo</b> in the top bar to your game's tempo to hear it right. This setting is only for listening and is not exported.</p>

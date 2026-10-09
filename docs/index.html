@@ -97,10 +97,12 @@ a.manual:hover{background:#e8c443}
 .ctl .val{font:12px ui-monospace,monospace;color:var(--accent);text-align:right}
 pre.cmds{background:#fff;border:1px solid #4a3b3a;border-radius:4px;padding:10px;font:12px/1.5 ui-monospace,monospace;white-space:pre-wrap;margin:6px 0}
 @media(max-width:1000px){.ctl{grid-template-columns:130px minmax(0,1fr) 54px}}
+
+.chpick{display:inline-flex;gap:4px}.chb{border:2px solid var(--c);background:#fff;color:var(--c);font-weight:700;border-radius:4px;padding:3px 9px;cursor:pointer}.chb.on{background:var(--c);color:#fff}.chb:disabled{opacity:.28;cursor:not-allowed}
 </style></head><body>
 <header>
   <a class="site-logo" href="https://t-arg.github.io/" title="TEAM a.r.g." target="_blank" rel="noopener noreferrer"><img src="data:image/gif;base64,R0lGODlheQAuAMIFAEc8Okg8OUY9Nk5BPv7+/P///////////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAcALAAAAAB5AC4AAAP+eHrRHivKSau9OOudA/kf4HBkaZ5PCnEe6DrDKc/z0LpfEG83DqrAxo5GNNk+tkduiOklB74oTheswipJq5CSvSqOBHDux7T0WjCptKeO6iTJ9uu9EJMP4Dz0XKacpw8DXYFyhXR4bIUEh4lLLWINi1N9En9hUIBrSFoqmItfTlaeizF5aZJhjR6Cd2Yve6o4rDqoiks5iCBxakJkjze0m7qeHr24ri9twTlopLY/uDd2ysGRtbdiT2OLwILeOw5Tco2oy4q0VMLPzrqJ6T/h13MPCsU4AIMpAFL428/Fj/b5+KYJWhSBLkQY9BGpGKJp8v75wyGgokUBY6w16jL+ioy6dRPn2LDBgBtDkAbNwUshyF6qgSpcsCoHciY5ew0Y7Hp1aV01W+EAMgQyZwzEcc3cjMzZ0I1JnyF5WXspa+rNeCifDpUEQchUeMy+AopHzg0adw3fwTxqi61XkgA7ivjmDaEsb2jsUvu4UslBrFnL4uyapSqQjn3RIA7rV2HWTWJBkptLZQFAYFrWYL3KUi1Kv48jQua2AJ+xVEDm8tv8zLRZ0DAD6I3KSzOVFfVEnA3CjTNYoJFjvlZV9qRZESIipOhNFHDR38DHwp5H3J3T4TmVB+XNbHYOux4AeL+eODIB3Y3Q34uFfYKSKiuZPTe6mLkD9ETlM8YeP1P+e/foISebPOHMtBBXux2Wj3A92cfJfvKZx41ufsDHxnYQMsbJdvnpt6EVw4imYQWylShgdeLFlOCDCN6X4gMvarHPgwMKJiCJ8A1loYYf2lfeh5dlJqJ9OHKnY3M8inLEckkK1xyQto1QSYp03YddGsg5qANdg1xioJaBrJiWV1S0NF1f7kUyI2bBWRgJlwseKROceM35zSp7tMSNmebRU0lYjOkpHSFbFhfaY+OBIB6fR1ZSTGG3pTgojIvECOSlmLJ4Hj47LUGSZUFyqF+TsPAYJTVnUscgczsJYYef9Ty1HIMs1XlbGUFol6ujuxaJGwOmYQaJH6TAkA6DVQbN1YWuQIBaBbPNkvjErwzcBl1X9JiyCjN4GXpMmlbUE8ggzm65LIkvVBAsQ8Cet4K2jkDXxqe8unpuCqBIGUgd3iDzLQUC5BMDTnUIhAk+JT1aBXgVSlltdviKSwesGwwgEMIo/BABJOBo7O8n4Gb38AoRVzsErCpY8EQNXtTRchaUuLxEw0Hs0G3JeJgp8ZZF9HzCyjRHqx259VLs89E915rFyNUiMgI9uRqN9NQsoMxUNO8+jXXKaFDtNQl08VvKFoKI7XQpcJ79tQQJAAA7" alt="TEAM a.r.g."></a>
-  <h1>ATMlib Sound Effects Editor <span style="color:#6b5f5e;font-weight:500">v0.1.1</span></h1>
+  <h1>ATMlib Sound Effects Editor <span style="color:#6b5f5e;font-weight:500">v0.2.1</span></h1>
   <span class="sep"></span>
   <button id="btnPlay" class="play">▶ Play</button>
   <label title="Ticks per second of the music this effect will be played over">Test tempo <input id="tempo" type="number" min="4" max="127" value="30"></label>
@@ -1310,9 +1312,11 @@ const clamp = A.clamp;
    wobble   'none' | 'vib' | 'trem'   with wd (depth) and wr (rate)
    tex      'none' | 'arp' | 'cut'    arp: chord + arpT (ticks/step); cut: cutN
    rumble   noise retrigger byte (CH3 only), 0 = off
+   tra      transposition (semitones) set before the notes
+   rep      repeat the first note this many times (0 = off), every repEvery ticks, adding repAdd semitones each time (ADD_TRA)
    tail     extra ticks of silence/decay after the notes
    ------------------------------------------------------------------ */
-const DEFAULT_G = { ch: 1, vol: 40, seq: [{ n: 37, l: 8 }], fade: 0, fadeEvery: 1, pslide: 0, pslideT: 8, glis: 0, wobble: 'none', wd: 2, wr: 3, tex: 'none', chord: 'maj', arpT: 1, cutN: 2, rumble: 0, tail: 0 };
+const DEFAULT_G = { ch: 1, vol: 40, seq: [{ n: 37, l: 8 }], fade: 0, fadeEvery: 1, pslide: 0, pslideT: 8, glis: 0, wobble: 'none', wd: 2, wr: 3, tex: 'none', chord: 'maj', arpT: 1, cutN: 2, rumble: 0, tail: 0, tra: 0, rep: 0, repEvery: 4, repAdd: 0 };
 
 function compile(g0) {
   const g = Object.assign({}, DEFAULT_G, g0);
@@ -1320,6 +1324,7 @@ function compile(g0) {
   const warn = [];
   let seq = (g.seq || []).map(s => ({ n: clamp(s.n | 0, 0, 63), l: Math.max(1, s.l | 0) }));
   if (!seq.length) seq = [{ n: 37, l: 4 }];
+  if (!noise && g.rep > 1) { const n0 = seq[0].n || 37; seq = []; for (let i = 0; i < g.rep; i++) seq.push({ n: n0, l: Math.max(1, g.repEvery | 0), tra: i ? (g.repAdd | 0) : 0 }); }
   if (noise) { const tot = seq.reduce((a, s) => a + s.l, 0); seq = [{ n: -1, l: tot }]; }
   let total = seq.reduce((a, s) => a + s.l, 0);
   if (g.tail > 0) { if (noise) seq[0].l += g.tail; else seq.push({ n: 0, l: g.tail }); total += g.tail; }
@@ -1357,8 +1362,10 @@ function compile(g0) {
   else if (g.wobble === 'trem') add(0, C('trem', [clamp(g.wd | 0, 0, 255), clamp(g.wr | 0, 0, 31)]));
   if (!noise && g.glis) { const per = g.glis < 0 ? Math.max(1, -g.glis) : Math.max(2, g.glis); add(0, C('glis', [((per - 1) & 127) | (g.glis < 0 ? 0x80 : 0)])); }   /* an upward GLIS(0) does nothing in the playroutine, so the shortest upward step is 2 ticks */
   if (noise && g.rumble) { add(0, C('nse', [g.rumble & 255])); if (total >= 2) add(total - 1, C('nseoff', [])); }
+  if (!noise && g.tra) add(0, C('settra', [clamp(g.tra | 0, -63, 63)]));
   let t = 0;
   seq.forEach(s => {
+    if (s.tra) add(t, C('addtra', [clamp(s.tra, -63, 63)]));
     if (s.n > 0) add(t, { b: [s.n], t: A.noteMacro(s.n) });
     else if (s.n === 0) add(t, { b: [0], t: '0x00', cm: 'rest' });
     t += s.l;
@@ -1460,6 +1467,65 @@ const STARTERS = [
   { id: 'gameover', cat: 'Jingles', name: 'Game over', ch: 1, desc: 'Notes stepping slowly down.',
     ctl: [R('pitch', 'Start pitch', 25, 55, 40, { fmt: noteLab }), R('steps', 'Notes', 3, 6, 4), R('speed', 'Speed (ticks/note)', 4, 14, 8), R('vol', 'Volume', 10, 63, 40)],
     build: p => { const o = [0, -2, -5, -7, -10, -12]; return { ch: 1, vol: p.vol, fade: 1, seq: o.slice(0, p.steps).map((x, i, a) => ({ n: P(p.pitch + x), l: i === a.length - 1 ? p.speed * 3 : p.speed })) }; } },
+  /* ---------- vibrato ---------- */
+  { id: 'alien', cat: 'Vibrato', name: 'Alien / UFO', ch: 1, desc: 'A high note wobbling hard. Vibrato makes the pitch wave up and down.',
+    ctl: [R('pitch', 'Pitch', 25, 60, 44, { fmt: noteLab }), R('depth', 'Wobble depth', 1, 20, 8), R('rate', 'Wobble speed (0 = fastest)', 0, 12, 1), R('len', 'Length (ticks)', 8, 60, 28), R('vol', 'Volume', 10, 63, 38)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.len / p.vol * 1.5)), wobble: 'vib', wd: p.depth, wr: p.rate, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'ghost', cat: 'Vibrato', name: 'Ghost / eerie', ch: 2, desc: 'A slow, wavering low note that swells in and fades.',
+    ctl: [R('pitch', 'Pitch', 8, 40, 22, { fmt: noteLab }), R('depth', 'Wobble depth', 1, 12, 4), R('rate', 'Wobble speed', 2, 16, 8), R('len', 'Length (ticks)', 20, 100, 56), R('vol', 'Peak volume', 10, 60, 48)],
+    build: p => ({ ch: 2, vol: 2, fade: -1, fadeEvery: Math.max(1, Math.round(p.len / p.vol)), wobble: 'vib', wd: p.depth, wr: p.rate, seq: [{ n: P(p.pitch), l: p.len }], tail: 0 }) },
+  { id: 'warble', cat: 'Vibrato', name: 'Warble / bird', ch: 1, desc: 'A quick chirp that trills. Good for birds, gadgets, a friendly NPC.',
+    ctl: [R('pitch', 'Pitch', 35, 63, 52, { fmt: noteLab }), R('depth', 'Trill depth', 2, 30, 14), R('rate', 'Trill speed (0 = fastest)', 0, 4, 0), R('len', 'Length (ticks)', 3, 20, 8), R('vol', 'Volume', 10, 63, 34)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 2, wobble: 'vib', wd: p.depth, wr: p.rate, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'dive', cat: 'Vibrato', name: 'Dive bomb', ch: 1, desc: 'A long falling note with a wobble: something plummets.',
+    ctl: [R('pitch', 'Start pitch', 30, 63, 54, { fmt: noteLab }), R('fall', 'Fall speed (ticks/semitone)', 1, 5, 2), R('depth', 'Wobble depth', 0, 16, 6), R('len', 'Length (ticks)', 12, 60, 30), R('vol', 'Volume', 10, 63, 40)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.len / p.vol * 1.4)), glis: -p.fall, wobble: 'vib', wd: p.depth, wr: 1, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  /* ---------- tremolo ---------- */
+  { id: 'pulse', cat: 'Tremolo', name: 'Pulsing alarm', ch: 1, desc: 'One steady note whose volume throbs. Tremolo makes the volume wave.',
+    ctl: [R('pitch', 'Pitch', 15, 55, 36, { fmt: noteLab }), R('depth', 'Throb depth', 2, 40, 20), R('rate', 'Throb speed (0 = fastest)', 0, 10, 2), R('len', 'Length (ticks)', 8, 80, 36), R('vol', 'Volume', 20, 63, 46)],
+    build: p => ({ ch: 1, vol: p.vol, wobble: 'trem', wd: p.depth, wr: p.rate, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'radar', cat: 'Tremolo', name: 'Radar / sonar ping', ch: 1, desc: 'A pure ping that fades with a slow throb.',
+    ctl: [R('pitch', 'Pitch', 30, 63, 50, { fmt: noteLab }), R('depth', 'Throb depth', 0, 30, 10), R('rate', 'Throb speed', 2, 10, 5), R('len', 'Length (ticks)', 10, 60, 30), R('vol', 'Volume', 10, 63, 44)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.len / p.vol * 1.3)), wobble: 'trem', wd: p.depth, wr: p.rate, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'flutter', cat: 'Tremolo', name: 'Helicopter / flutter', ch: 3, desc: 'Noise chopped very fast: rotor blades, a fan, a motor.',
+    ctl: [R('len', 'Length (ticks)', 10, 80, 40), R('depth', 'Chop depth', 4, 30, 18), R('rate', 'Chop speed (0 = fastest)', 0, 8, 2), R('vol', 'Volume', 15, 63, 40)],
+    build: p => ({ ch: 3, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.len / p.vol * 1.2)), wobble: 'trem', wd: p.depth, wr: p.rate, rumble: 0x15, seq: [{ n: 0, l: p.len }] }) },
+  { id: 'static', cat: 'Tremolo', name: 'Static / TV hiss', ch: 3, desc: 'A fizzing noise with a flicker. Broken screens and radios.',
+    ctl: [R('len', 'Length (ticks)', 4, 50, 18), R('depth', 'Flicker', 2, 30, 14), R('rate', 'Flicker speed', 0, 6, 0), R('vol', 'Volume', 10, 63, 34)],
+    build: p => ({ ch: 3, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.len / p.vol)), wobble: 'trem', wd: p.depth, wr: p.rate, seq: [{ n: 0, l: p.len }] }) },
+  /* ---------- arpeggio ---------- */
+  { id: 'chime', cat: 'Arpeggio', name: 'Chime / bell', ch: 1, desc: 'A chord played note by note, very fast, ringing out. An arpeggio.',
+    ctl: [R('pitch', 'Pitch', 20, 55, 38, { fmt: noteLab }), S('chord', 'Chord', [['maj', 'Major'], ['min', 'Minor'], ['maj7', 'Maj7'], ['min7', 'm7'], ['sus4', 'Sus4'], ['pow', 'Power'], ['oct', 'Octave']], 'maj'), R('speed', 'Speed (ticks per note)', 1, 4, 1), R('len', 'Length (ticks)', 6, 50, 24), R('vol', 'Volume', 10, 63, 40)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.len / p.vol * 1.5)), tex: 'arp', chord: p.chord, arpT: p.speed, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'phone', cat: 'Arpeggio', name: 'Ringing phone', ch: 1, desc: 'Two chords flick back and forth, then a pause, then again.',
+    ctl: [R('pitch', 'Pitch', 30, 60, 48, { fmt: noteLab }), S('chord', 'Chord', [['oct', 'Octave'], ['pow', 'Power'], ['maj', 'Major'], ['dim', 'Diminished']], 'oct'), R('rings', 'Rings', 1, 4, 2), R('on', 'Ring (ticks)', 3, 12, 6), R('gap', 'Pause (ticks)', 2, 14, 5), R('vol', 'Volume', 10, 63, 34)],
+    build: p => { const s = []; for (let i = 0; i < p.rings; i++) { s.push({ n: P(p.pitch), l: p.on }); if (i < p.rings - 1) s.push({ n: 0, l: p.gap }); } return { ch: 1, vol: p.vol, tex: 'arp', chord: p.chord, arpT: 1, seq: s }; } },
+  { id: 'computer', cat: 'Arpeggio', name: 'Computer / sci-fi', ch: 1, desc: 'Fast bubbling notes on one pitch: a busy machine thinking.',
+    ctl: [R('pitch', 'Pitch', 25, 60, 42, { fmt: noteLab }), S('chord', 'Chord', [['dim', 'Diminished'], ['aug', 'Augmented'], ['sus4', 'Sus4'], ['min', 'Minor'], ['maj', 'Major']], 'dim'), R('speed', 'Speed (ticks per note)', 1, 3, 1), R('len', 'Length (ticks)', 6, 60, 20), R('vol', 'Volume', 10, 63, 30)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.len / p.vol * 1.5)), tex: 'arp', chord: p.chord, arpT: p.speed, seq: [{ n: P(p.pitch), l: Math.floor(p.len / 2) }, { n: P(p.pitch + 5), l: Math.ceil(p.len / 2) }] }) },
+  { id: 'pad', cat: 'Arpeggio', name: 'Power chord hit', ch: 2, desc: 'A fat chord stab on a low note that fades quickly.',
+    ctl: [R('pitch', 'Pitch', 8, 40, 20, { fmt: noteLab }), S('chord', 'Chord', [['pow', 'Power'], ['maj', 'Major'], ['min', 'Minor'], ['oct', 'Octave']], 'pow'), R('len', 'Length (ticks)', 4, 40, 14), R('vol', 'Volume', 10, 63, 50)],
+    build: p => ({ ch: 2, vol: p.vol, fade: Math.max(1, Math.ceil(p.vol / p.len)), tex: 'arp', chord: p.chord, arpT: 1, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  { id: 'glitch', cat: 'Arpeggio', name: 'Stutter / glitch', ch: 1, desc: 'A note chopped into little pieces (the note gate). Robot or broken-machine voice.',
+    ctl: [R('pitch', 'Pitch', 15, 60, 38, { fmt: noteLab }), R('cut', 'Piece length (ticks)', 1, 8, 2), R('len', 'Length (ticks)', 6, 60, 24), R('vol', 'Volume', 10, 63, 40), R('fade', 'Fade out', 0, 4, 1)],
+    build: p => ({ ch: 1, vol: p.vol, fade: p.fade, tex: 'cut', cutN: p.cut, seq: [{ n: P(p.pitch), l: p.len }] }) },
+  /* ---------- transpose (note repeated, shifted each time) ---------- */
+  { id: 'stairsup', cat: 'Transpose', name: 'Staircase up', ch: 1, desc: 'The same note repeated, climbing a step every time (transposition added each repeat).',
+    ctl: [R('pitch', 'Start pitch', 13, 50, 28, { fmt: noteLab }), R('steps', 'Notes', 3, 12, 6), R('add', 'Step size (semitones)', 1, 7, 2), R('speed', 'Speed (ticks/note)', 1, 8, 2), R('vol', 'Volume', 10, 63, 40)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.steps * p.speed / p.vol * 1.5)), rep: p.steps, repEvery: p.speed, repAdd: p.add, seq: [{ n: P(p.pitch), l: p.speed }], tail: p.speed * 2 }) },
+  { id: 'stairsdown', cat: 'Transpose', name: 'Staircase down', ch: 1, desc: 'The same note repeated, dropping a step every time.',
+    ctl: [R('pitch', 'Start pitch', 25, 63, 50, { fmt: noteLab }), R('steps', 'Notes', 3, 12, 6), R('add', 'Step size (semitones)', 1, 7, 2), R('speed', 'Speed (ticks/note)', 1, 8, 2), R('vol', 'Volume', 10, 63, 40)],
+    build: p => ({ ch: 1, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.steps * p.speed / p.vol * 1.5)), rep: p.steps, repEvery: p.speed, repAdd: -p.add, seq: [{ n: P(p.pitch), l: p.speed }], tail: p.speed * 2 }) },
+  { id: 'typewriter', cat: 'Transpose', name: 'Typing / ticker', ch: 1, desc: 'Short identical ticks with a tiny pitch change: text appearing, a counter ticking.',
+    ctl: [R('pitch', 'Pitch', 30, 63, 52, { fmt: noteLab }), R('count', 'Ticks', 2, 16, 8), R('add', 'Pitch change per tick', -2, 2, 0), R('speed', 'Spacing (ticks)', 1, 5, 2), R('vol', 'Volume', 10, 63, 30)],
+    build: p => ({ ch: 1, vol: p.vol, rep: p.count, repEvery: p.speed, repAdd: p.add, seq: [{ n: P(p.pitch), l: p.speed }], cutN: 0, tex: 'cut' }) },
+  { id: 'octaves', cat: 'Transpose', name: 'Octave jump', ch: 1, desc: 'A note that hops up an octave and back, like a heartbeat or a bounce.',
+    ctl: [R('pitch', 'Pitch', 13, 45, 30, { fmt: noteLab }), R('hops', 'Hops', 2, 8, 4), R('speed', 'Speed (ticks/hop)', 2, 8, 3), R('vol', 'Volume', 10, 63, 42)],
+    build: p => { const s = []; for (let i = 0; i < p.hops; i++) s.push({ n: P(p.pitch + (i % 2 ? 12 : 0)), l: p.speed }); return { ch: 1, vol: p.vol, fade: 1, fadeEvery: Math.max(1, Math.floor(p.hops * p.speed / p.vol * 1.4)), seq: s }; } },
+  { id: 'lowrider', cat: 'Transpose', name: 'Shifted voice', ch: 2, desc: 'Same melody as Power-up but shifted down by a set amount. Slide it to re-pitch the whole effect.',
+    ctl: [R('root', 'Start pitch', 8, 40, 20, { fmt: noteLab }), R('tra', 'Shift all notes (semitones)', -12, 12, -5), R('steps', 'Notes', 3, 7, 4), R('speed', 'Speed (ticks/note)', 1, 6, 3), R('vol', 'Volume', 10, 63, 42)],
+    build: p => ({ ch: 2, vol: p.vol, fade: 1, tra: p.tra, seq: SCALES.minor.slice(0, p.steps).map((o, i, a) => ({ n: P(p.root + o), l: i === a.length - 1 ? p.speed * 3 : p.speed })) }) },
+
   { id: 'drop', cat: 'Movement', name: 'Bubble / water drop', ch: 1, desc: 'A tiny rising "bloop".',
     ctl: [R('pitch', 'Pitch', 25, 55, 40, { fmt: noteLab }), R('speed', 'Climb (ticks per semitone)', 2, 4, 2), R('len', 'Length (ticks)', 3, 14, 7), R('vol', 'Volume', 10, 63, 36)],
     build: p => ({ ch: 1, vol: p.vol, fade: Math.ceil(p.vol / p.len / 1.2), glis: p.speed, seq: [{ n: P(p.pitch), l: p.len }] }) },
@@ -1467,7 +1533,9 @@ const STARTERS = [
     ctl: [R('pitch', 'Start pitch', 10, 40, 20, { fmt: noteLab }), R('speed', 'Climb (ticks/semitone)', 2, 6, 2), R('len', 'Length (ticks)', 16, 80, 40), R('vol', 'Start volume', 4, 40, 10)],
     build: p => ({ ch: 1, vol: p.vol, fade: -1, fadeEvery: Math.max(1, Math.round(p.len / (60 - p.vol))), glis: p.speed, seq: [{ n: P(p.pitch), l: p.len }] }) }
 ];
-const CATS = ['Movement', 'Pick-ups', 'Menu', 'Weapons', 'Impacts', 'Alerts', 'Jingles'];
+const CATS = ['Movement', 'Pick-ups', 'Menu', 'Weapons', 'Impacts', 'Alerts', 'Jingles', 'Vibrato', 'Tremolo', 'Arpeggio', 'Transpose'];
+const CHCOL = ['#d64545', '#2f7fd1', '#2e9a5b', '#e08a1a'];   /* CH0 red, CH1 blue, CH2 green, CH3 orange (noise) */
+const CHLAB = ['CH0', 'CH1', 'CH2', 'CH3 noise'];
 
 function defaultsOf(st) { const p = {}; st.ctl.forEach(c => { p[c.id] = c.def; }); return p; }
 function starterById(id) { return STARTERS.filter(s => s.id === id)[0]; }
@@ -1512,7 +1580,7 @@ function exportText(pr) {
   return L.join('\n');
 }
 
-const API = { DEFAULT_G, compile, STARTERS, CATS, SCALES, defaultsOf, starterById, gOfEffect, compileEffect, newProject, addEffect, exportText, ident, camel, CHN };
+const API = { DEFAULT_G, compile, STARTERS, CATS, SCALES, defaultsOf, starterById, gOfEffect, compileEffect, newProject, addEffect, exportText, ident, camel, CHN, CHCOL, CHLAB };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.ATMSFX = API;
 })(typeof window !== 'undefined' ? window : globalThis);
 </script><script>(function () {
@@ -1621,7 +1689,7 @@ function renderLeft() {
     pr.effects.forEach(e => {
       const r = F.compileEffect(e);
       el.appendChild(h('div', { class: 'item' + (e.id === UI.sel ? ' sel' : ''), onclick: () => { UI.sel = e.id; UI.adv = !!e.adv; renderAll(); refreshViz(); } },
-        h('span', { class: 'nm' }, e.name), h('span', { class: 'meta' }, r.size + ' B · CH' + r.ch),
+        h('span', { class: 'chip', style: 'background:' + F.CHCOL[r.ch] }), h('span', { class: 'nm' }, e.name), h('span', { class: 'meta' }, r.size + ' B · CH' + r.ch),
         h('button', { class: 'sm', title: 'Play', onclick: ev => { ev.stopPropagation(); playEffect(e); } }, '▶')));
     });
     el.appendChild(h('p', { class: 'hint', style: 'margin-top:10px' }, 'Total: ' + pr.effects.reduce((a, e) => a + F.compileEffect(e).size, 0) + ' bytes in your sketch.'));
@@ -1631,7 +1699,7 @@ function renderLeft() {
       el.appendChild(h('div', { class: 'cat' }, c));
       F.STARTERS.filter(s => s.cat === c).forEach(st => {
         el.appendChild(h('div', { class: 'item', title: st.desc, ondblclick: () => addStarter(st) },
-          h('span', { class: 'nm' }, st.name), h('span', { class: 'meta' }, st.ch === 3 ? 'noise' : 'tone'),
+          h('span', { class: 'chip', style: 'background:' + F.CHCOL[st.ch === 3 ? 3 : 1] }), h('span', { class: 'nm' }, st.name), h('span', { class: 'meta' }, st.ch === 3 ? 'noise' : 'tone'),
           h('button', { class: 'sm', onclick: () => playStarter(st) }, '▶'), h('button', { class: 'sm', onclick: () => addStarter(st) }, '+')));
         el.appendChild(h('div', { class: 'desc' }, st.desc));
       });
@@ -1660,7 +1728,7 @@ function renderCentre() {
   const st = F.starterById(e.preset); const r = F.compileEffect(e);
   el.appendChild(h('div', { class: 'bar' },
     h('input', { type: 'text', value: e.name, style: 'width:190px;font-weight:600', onchange: ev => mutate(() => { e.name = ev.target.value || e.name; }) }),
-    h('label', null, 'Channel '), h('select', { class: 'light', onchange: ev => mutate(() => { e.ch = parseInt(ev.target.value, 10); if (e.adv) e.adv.ch = e.ch; }) }, [['0', 'CH0 pulse'], ['1', 'CH1 square'], ['2', 'CH2 saw'], ['3', 'CH3 noise']].map(o => h('option', { value: o[0], selected: +o[0] === r.ch }, o[1]))),
+    h('div', { class: 'chpick', title: 'Which channel plays the effect' }, [0, 1, 2, 3].map(i => { const noiseSt = st.ch === 3; const dis = noiseSt ? i !== 3 : i === 3; return h('button', { class: 'chb' + (r.ch === i ? ' on' : ''), disabled: dis, style: '--c:' + F.CHCOL[i], title: dis ? (noiseSt ? 'Noise effects only play on CH3' : 'CH3 is the noise channel') : 'Play on ' + F.CHLAB[i], onclick: () => { mutate(() => { e.ch = i; if (e.adv) e.adv.ch = i; }); playEffect(e); } }, F.CHLAB[i]); })),
     h('span', { class: 'hint' }, 'starter: ' + st.name),
     h('span', { style: 'margin-left:auto' }),
     h('label', { title: 'Play the sound whenever you move a slider' }, h('input', { type: 'checkbox', checked: UI.auto, onchange: ev => { UI.auto = ev.target.checked; } }), ' Play while I edit'),
@@ -1676,7 +1744,7 @@ function renderCentre() {
     st.ctl.forEach(c => {
       const val = h('span', { class: 'val' }, fmtVal(c, e.p[c.id]));
       let inp;
-      if (c.type === 'r') inp = h('input', { type: 'range', min: c.min, max: c.max, step: c.step, value: e.p[c.id], oninput: ev => { const v = +ev.target.value; e.p[c.id] = v; val.textContent = fmtVal(c, v); upd(e); }, onchange: () => { mutate(() => {}, true); } });
+      if (c.type === 'r') inp = h('input', { type: 'range', min: c.min, max: c.max, step: c.step, value: e.p[c.id], oninput: ev => { const v = +ev.target.value; e.p[c.id] = v; val.textContent = fmtVal(c, v); upd(e); }, onpointerdown: () => { UI.pre = snapJ(); }, onchange: () => { if (UI.pre) { checkpoint(UI.pre); UI.pre = null; } } });
       else inp = h('select', { class: 'light', onchange: ev => { const o = c.opts.filter(x => String(x[0]) === ev.target.value)[0]; mutate(() => { e.p[c.id] = o[0]; }, true); upd(e); renderCentre(); } }, c.opts.map(o => h('option', { value: o[0], selected: String(o[0]) === String(e.p[c.id]) }, o[1])));
       body.appendChild(ctlRow(c.label, inp, c.type === 'r' ? val : null));
     });
@@ -1692,13 +1760,13 @@ function upd(e) { updInfo(e); schedule(e); saveLocal(); const li = $('#left'); }
 function updInfo(e) {
   const r = F.compileEffect(e); const c = $('#cmds');
   if (c) c.textContent = r.cmds.map(x => x.t).join(',\n') + ',\nATM_STOP_CHAN   // added by ATM_SFX_TRACK';
-  const v = $('#vizinfo'); if (v) v.textContent = r.size + ' bytes · ' + r.ticks + ' ticks · ' + (r.ticks / pr.tempo).toFixed(2) + ' s at tempo ' + pr.tempo + ' · plays on CH' + r.ch;
+  const v = $('#vizinfo'); if (v) v.textContent = r.size + ' bytes · ' + r.ticks + ' ticks · ' + (r.ticks / pr.tempo).toFixed(2) + ' s at tempo ' + pr.tempo + ' · plays on ' + F.CHLAB[r.ch];
   renderLeftLight();
 }
 function renderLeftLight() { if (UI.left === 'effects') renderLeft(); renderRight(); }
 function advPanel(body, e) {
   const g = e.adv; const set = (k, v) => { g[k] = v; upd(e); };
-  const R = (label, key, min, max, step, fmt) => { const val = h('span', { class: 'val' }, fmt ? fmt(g[key]) : g[key]); body.appendChild(ctlRow(label, h('input', { type: 'range', min: min, max: max, step: step || 1, value: g[key], oninput: ev => { const v = +ev.target.value; set(key, v); val.textContent = fmt ? fmt(v) : v; }, onchange: () => mutate(() => {}, true) }), val)); };
+  const R = (label, key, min, max, step, fmt) => { const val = h('span', { class: 'val' }, fmt ? fmt(g[key]) : g[key]); body.appendChild(ctlRow(label, h('input', { type: 'range', min: min, max: max, step: step || 1, value: g[key], oninput: ev => { const v = +ev.target.value; set(key, v); val.textContent = fmt ? fmt(v) : v; }, onpointerdown: () => { UI.pre = snapJ(); }, onchange: () => { if (UI.pre) { checkpoint(UI.pre); UI.pre = null; } } }), val)); };
   const S = (label, key, opts) => body.appendChild(ctlRow(label, h('select', { class: 'light', onchange: ev => { const v = isNaN(+ev.target.value) || ev.target.value === '' ? ev.target.value : +ev.target.value; mutate(() => { g[key] = v; }); } }, opts.map(o => h('option', { value: o[0], selected: String(o[0]) === String(g[key]) }, o[1])))));
   R('Volume', 'vol', 0, 63);
   R('Fade out (negative = swell)', 'fade', -8, 16);
@@ -1711,14 +1779,17 @@ function advPanel(body, e) {
   S('Texture', 'tex', [['none', 'none'], ['arp', 'arpeggio (chord)'], ['cut', 'stutter (gate)']]);
   if (g.tex === 'arp') { S('Chord', 'chord', A.CHORDS.map(c => [c.id, c.name])); R('Ticks per chord note', 'arpT', 1, 8); }
   if (g.tex === 'cut') R('Stutter length (ticks)', 'cutN', 0, 8);
+  R('Shift all notes (semitones)', 'tra', -24, 24);
+  R('Repeat the first note N times (0 = off)', 'rep', 0, 16);
+  if (g.rep > 1) { R('Repeat every (ticks)', 'repEvery', 1, 12); R('Shift per repeat (semitones)', 'repAdd', -12, 12); }
   S('Rumble (CH3 only)', 'rumble', [[0, 'none'], [0x14, 'low'], [0x15, 'medium'], [0x16, 'high']]);
   R('Extra tail (ticks)', 'tail', 0, 40);
   body.appendChild(h('h2', null, 'Notes'));
   g.seq.forEach((s, i) => {
     const nv = h('span', { class: 'val' }, s.n === 0 ? 'rest' : A.noteName(s.n)), lv = h('span', { class: 'val' }, s.l + 't');
     body.appendChild(h('div', { class: 'ctl notes' }, h('label', null, 'Note ' + (i + 1)),
-      h('input', { type: 'range', min: 0, max: 63, value: s.n, oninput: ev => { s.n = +ev.target.value; nv.textContent = s.n === 0 ? 'rest' : A.noteName(s.n); upd(e); }, onchange: () => mutate(() => {}, true) }), nv,
-      h('label', null, 'long'), h('input', { type: 'range', min: 1, max: 40, value: s.l, oninput: ev => { s.l = +ev.target.value; lv.textContent = s.l + 't'; upd(e); }, onchange: () => mutate(() => {}, true) }), lv,
+      h('input', { type: 'range', min: 0, max: 63, value: s.n, oninput: ev => { s.n = +ev.target.value; nv.textContent = s.n === 0 ? 'rest' : A.noteName(s.n); upd(e); }, onpointerdown: () => { UI.pre = snapJ(); }, onchange: () => { if (UI.pre) { checkpoint(UI.pre); UI.pre = null; } } }), nv,
+      h('label', null, 'long'), h('input', { type: 'range', min: 1, max: 40, value: s.l, oninput: ev => { s.l = +ev.target.value; lv.textContent = s.l + 't'; upd(e); }, onpointerdown: () => { UI.pre = snapJ(); }, onchange: () => { if (UI.pre) { checkpoint(UI.pre); UI.pre = null; } } }), lv,
       h('button', { class: 'sm ghost', onclick: () => mutate(() => { if (g.seq.length > 1) g.seq.splice(i, 1); }) }, '✕')));
   });
   body.appendChild(h('div', { class: 'row' }, h('button', { class: 'sm', onclick: () => mutate(() => { if (g.seq.length < 12) g.seq.push({ n: g.seq[g.seq.length - 1].n || 30, l: 4 }); }) }, '+ note'),
@@ -1733,17 +1804,17 @@ function drawViz() {
   if (!V) { g.fillStyle = '#999'; g.font = '13px sans-serif'; g.fillText('Press Play to see the sound', 14, 24); return; }
   const d = V.data, n = Math.max(1, V.r.ticks), bw = (W - 20) / Math.max(n, 8), x0 = 10;
   let mx = 0.05; d.forEach(p => { mx = Math.max(mx, p.a); });
-  d.slice(0, n).forEach((p, i) => { const hh = (p.a / mx) * (H - 36); g.fillStyle = '#8a7a6f'; g.fillRect(x0 + i * bw + 1, H - 16 - hh, Math.max(1, bw - 2), hh); });
+  d.slice(0, n).forEach((p, i) => { const hh = (p.a / mx) * (H - 36); g.fillStyle = F.CHCOL[V.r.ch]; g.fillRect(x0 + i * bw + 1, H - 16 - hh, Math.max(1, bw - 2), hh); });
   if (V.r.ch !== 3) {
-    g.strokeStyle = '#c9a227'; g.lineWidth = 3; g.beginPath(); let first = true;
+    g.strokeStyle = '#333'; g.lineWidth = 2; g.beginPath(); let first = true;
     d.slice(0, n).forEach((p, i) => { if (p.a < mx * 0.04 || p.f < 40) { first = true; return; } const y = H - 16 - (Math.log(Math.min(p.f, 5000) / 40) / Math.log(5000 / 40)) * (H - 36); const x = x0 + i * bw + bw / 2; if (first) { g.moveTo(x, y); first = false; } else g.lineTo(x, y); });
     g.stroke(); g.lineWidth = 1;
   }
   g.fillStyle = '#6b5f5e'; g.font = '11px sans-serif'; const stepT = n > 60 ? 16 : n > 24 ? 8 : 4;
   for (let i = 0; i <= n; i += stepT) { g.fillText(i + '', x0 + i * bw, H - 3); }
   g.fillText('ticks', W - 34, H - 3);
-  g.fillStyle = '#8a7a6f'; g.fillRect(W - 150, 8, 10, 10); g.fillStyle = '#333'; g.fillText('volume', W - 135, 17);
-  if (V.r.ch !== 3) { g.fillStyle = '#c9a227'; g.fillRect(W - 80, 11, 14, 4); g.fillStyle = '#333'; g.fillText('pitch', W - 62, 17); }
+  g.fillStyle = F.CHCOL[V.r.ch]; g.fillRect(W - 150, 8, 10, 10); g.fillStyle = '#333'; g.fillText('volume', W - 135, 17);
+  if (V.r.ch !== 3) { g.fillStyle = '#333'; g.fillRect(W - 80, 11, 14, 3); g.fillStyle = '#333'; g.fillText('pitch', W - 62, 17); }
 }
 
 /* ---------------- right: export ---------------- */
