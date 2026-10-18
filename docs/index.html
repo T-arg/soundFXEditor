@@ -1559,22 +1559,33 @@ function exportText(pr) {
   W('#ifndef ' + name + '_H'); W('#define ' + name + '_H'); W('');
   W('// ---------------------------------------------------------------------------');
   W('//  Sound effects for ATM.playSfx()  (made with the ATMlib Sound Effects Editor)');
-  W('//  Play one with:  ATM.playSfx(sfxName, CH_ONE);   (use the channel noted at each effect)');
+  W('//  Every effect is a PROGMEM track that ends with ATM_STOP_CHAN. soundFX[] is a PROGMEM list of them,');
+  W('//  soundFXch[] holds the channel of each one. Play effect n with:');
+  W('//    ATM.playSfx((const uint8_t *)pgm_read_word(&soundFX[n]), pgm_read_byte(&soundFXch[n]));');
   W('//  Lengths are in song ticks: an effect is shorter in a faster song. Designed at tempo ' + pr.tempo + '.');
   W('// ---------------------------------------------------------------------------'); W('');
   W('#include <ATMcmds.h>'); W('');
-  let tot = 0; const used = {};
+  let tot = 0; const used = {}, defs = {}; const names = [], defNames = [], chs = [];
   pr.effects.forEach(e => {
     const r = compileEffect(e); tot += r.size;
     const nm = 'sfx' + camel(e.name); let u = nm, k = 2; while (used[u]) u = nm + (k++); used[u] = 1;
+    let d = 'SFX_' + ident(e.name).toUpperCase().replace(/_+/g, '_').replace(/^_|_$/g, ''), j = 2; const d0 = d; while (defs[d]) d = d0 + '_' + (j++); defs[d] = 1;
+    names.push(u); defNames.push(d); chs.push(r.ch);
     W('// ' + e.name + ': ' + r.size + ' bytes, ' + r.ticks + ' ticks (' + (r.ticks / pr.tempo).toFixed(2) + ' s at tempo ' + pr.tempo + '), use on ' + CHN[r.ch]);
-    W('ATM_SFX_TRACK(' + u + ',');
-    const lines = []; let cur = [];
-    r.cmds.forEach(c => { cur.push(c.t); const end = c.b[0] >= 0xA0 && c.b[0] <= 0xE0; if (end) { lines.push(cur.join(', ')); cur = []; } });
-    if (cur.length) lines.push(cur.join(', '));
-    lines.forEach((ln, i) => W('  ' + ln + (i < lines.length - 1 ? ',' : '')));
-    W(');'); W('');
+    W('const uint8_t ' + u + '[] PROGMEM = {');
+    r.cmds.forEach(c => W('  ' + c.t + ','));
+    W('  ATM_STOP_CHAN');
+    W('};'); W('');
   });
+  if (pr.effects.length) {
+    defNames.forEach((d, i) => W('#define ' + d + ' ' + i));
+    W('');
+    W('const unsigned char * const PROGMEM soundFX[] =');
+    W('{');
+    names.forEach(n => W('  ' + n + ','));
+    W('};'); W('');
+    W('const uint8_t soundFXch[] PROGMEM = { ' + chs.join(', ') + ' };   // channel of each effect'); W('');
+  }
   W('// total: ' + tot + ' bytes in ' + pr.effects.length + ' effect' + (pr.effects.length === 1 ? '' : 's')); W('');
   W('#endif');
   return L.join('\n');
@@ -1768,7 +1779,7 @@ function renderCentre() {
 function upd(e) { updInfo(e); schedule(e); saveLocal(); const li = $('#left'); }
 function updInfo(e) {
   const r = F.compileEffect(e); const c = $('#cmds');
-  if (c) c.textContent = r.cmds.map(x => x.t).join(',\n') + ',\nATM_STOP_CHAN   // added by ATM_SFX_TRACK';
+  if (c) c.textContent = r.cmds.map(x => x.t).join(',\n') + ',\nATM_STOP_CHAN';
   const v = $('#vizinfo'); if (v) v.textContent = r.size + ' bytes · ' + r.ticks + ' ticks · ' + (r.ticks / pr.tempo).toFixed(2) + ' s at tempo ' + pr.tempo + ' · plays on ' + F.CHLAB[r.ch];
   renderLeftLight();
 }
@@ -1840,7 +1851,7 @@ function renderRight() {
     h('button', { onclick: () => download(F.ident(pr.name) + '.h', text) }, 'Download ' + F.ident(pr.name) + '.h')));
   el.appendChild(h('h2', null, 'Using it'));
   const first = pr.effects[0]; const r0 = F.compileEffect(first);
-  el.appendChild(h('pre', { class: 'cmds' }, '#include "' + F.ident(pr.name) + '.h"\n\n// when something happens:\nATM.playSfx(sfx' + F.camel(first.name) + ', ' + F.CHN[r0.ch] + ');'));
+  el.appendChild(h('pre', { class: 'cmds' }, '#include "' + F.ident(pr.name) + '.h"\n\n// play effect n from the PROGMEM list\nvoid sfx(byte n)\n{\n  ATM.playSfx((const uint8_t *)pgm_read_word(&soundFX[n]), pgm_read_byte(&soundFXch[n]));\n}\n\n// when something happens:\nsfx(SFX_' + F.ident(first.name).toUpperCase().replace(/_+/g, '_').replace(/^_|_$/g, '') + ');   // ' + F.CHN[r0.ch]));
   el.appendChild(h('p', { class: 'hint' }, 'The effect takes the channel for its duration and gives it back to the song afterwards. Pick a channel that is quiet in your song, or CH3 for noise effects.'));
   el.appendChild(h('h2', null, 'Test tempo'));
   el.appendChild(h('p', { class: 'hint' }, 'Effects count in song ticks, so they are shorter in a fast song. The test tempo (in the top bar) is only for listening here: set it to the tempo of your game\'s music.'));

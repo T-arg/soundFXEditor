@@ -56,7 +56,7 @@ th{background:var(--panel)}
 <li>Open the <b>Starters</b> tab on the left. Press ▶ next to any starter to hear it.</li>
 <li>Press <b>+</b> (or double-click) to add one to <b>My effects</b>.</li>
 <li>Move the sliders. With "Play while I edit" ticked, the sound plays after every move.</li>
-<li>Give it a name. The name becomes the name in your code (<i>Coin pickup</i> becomes <code>sfxCoinPickup</code>).</li>
+<li>Give it a name. The name becomes the name in your code (<i>Coin pickup</i> becomes the track <code>sfxCoinPickup</code> and the number <code>SFX_COIN_PICKUP</code>).</li>
 <li>Copy the text from the right panel, or press <b>Download</b>, and put it in your sketch.</li>
 </ol>
 <div class="tip"><b>Stuck for ideas?</b>Press <b>🎲 Surprise me</b>. It nudges the sliders to random values. Undo (<kbd>Ctrl</kbd>+<kbd>Z</kbd>) brings the old sound back.</div>
@@ -88,15 +88,32 @@ th{background:var(--panel)}
 <p>ATMlib counts in <b>ticks</b>, and a tick is a fixed fraction of your song's tempo. So an effect lasts a different time in a fast song than in a slow one. Set <b>Test tempo</b> in the top bar to your game's tempo to hear it right. This setting is only for listening and is not exported.</p>
 
 <h2 id="export">Export</h2>
-<p>The right panel holds a ready-made header file with one <code>ATM_SFX_TRACK</code> per effect, plus comments with size, ticks and channel. Name the file (default <code>sfx</code>), then <b>Copy</b> or <b>Download</b>. The total size in bytes is shown so you can watch your memory.</p>
+<p>The right panel holds a ready-made header file. Every effect is a plain <b>PROGMEM</b> track that ends with <code>ATM_STOP_CHAN</code>:</p>
+<pre>const uint8_t sfxJump[] PROGMEM = {
+  ATM_VOL(48),
+  ATM_SL_VOL((uint8_t)-4),
+  ATM_GLIS(1),
+  ATM_NOTE_B3,
+  ATM_DELAY(12),
+  ATM_STOP_CHAN
+};</pre>
+<p>After the effects come a <code>#define</code> per effect (<code>SFX_JUMP 0</code>, <code>SFX_COIN 1</code> ...), a PROGMEM list <code>soundFX[]</code> with all the tracks, and a small PROGMEM list <code>soundFXch[]</code> with the channel of each effect. Comments give size, ticks and channel. Name the file (default <code>sfx</code>), then <b>Copy</b> or <b>Download</b>. The total size in bytes is shown so you can watch your memory.</p>
 
 <h2 id="use">Playing it</h2>
+<p>ATMlib wants a pointer to the track, so look it up in the list. Put one small function in your sketch and call it with the number:</p>
 <pre>#include &lt;ATMlib.h&gt;
 #include "sfx.h"
 
+void sfx(byte n)
+{
+  ATM.playSfx((const uint8_t *)pgm_read_word(&amp;soundFX[n]),
+              pgm_read_byte(&amp;soundFXch[n]));
+}
+
 // when something happens:
-ATM.playSfx(sfxCoin, CH_ONE);</pre>
-<p>Use the channel noted for that effect. <code>ATM.playSfx</code> needs ATMlib to be set up with a song (or silence) as usual.</p>
+sfx(SFX_COIN);</pre>
+<p>Want to ignore the channel list? Pass your own channel instead, for example <code>ATM.playSfx((const uint8_t *)pgm_read_word(&amp;soundFX[n]), CH_ONE)</code>. To respect the sound setting of the Arduboy, wrap the call in <code>if (arduboy.audio.enabled())</code>, ATMlib does not look at it. <code>ATM.playSfx</code> needs ATMlib to be set up with a song (or silence) as usual.</p>
+<p><b>ATMconfig.h:</b> effects that use glissando (<code>ATM_GLIS</code>), noise, tremolo, vibrato, note cut and so on need the matching switch to be on in your <code>ATMconfig.h</code> (<code>ATM_FX_GLISSANDO</code>, <code>ATM_FX_NOISE</code> ...), otherwise the command is ignored and the sound is different. Leave the ones you don't use off to save flash.</p>
 
 <h2 id="files">Save, open, reset</h2>
 <ul>
@@ -110,7 +127,7 @@ ATM.playSfx(sfxCoin, CH_ONE);</pre>
 <table>
 <tr><th>Problem</th><th>Try this</th></tr>
 <tr><td>No sound</td><td>Press Play once (browsers only allow sound after a click). Check the device volume and silent switch.</td></tr>
-<tr><td>It sounds different on the Arduboy</td><td>Check the tempo, and make sure you pass the right channel to <code>playSfx</code>.</td></tr>
+<tr><td>It sounds different on the Arduboy</td><td>Check the tempo, and make sure you pass the right channel to <code>playSfx</code> and that the effects it uses (glissando, noise ...) are switched on in <code>ATMconfig.h</code>.</td></tr>
 <tr><td>The effect cuts my music</td><td>That is how it works: the channel is borrowed. Use a channel your music leaves quiet.</td></tr>
 <tr><td>The sliders stopped working</td><td>You used "Edit every setting". Press "Back to starter sliders", or keep editing in detail.</td></tr>
 <tr><td>I lost my effects</td><td>Autosave lives in the browser. Use <b>Save</b> to keep a project file.</td></tr>
